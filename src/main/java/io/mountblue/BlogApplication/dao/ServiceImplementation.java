@@ -22,4 +22,16 @@ public class ServiceImplementation {
         return postDBData;
     }
 
+    public void save(Post post) {
+        postRepository.save(post);
+    }
+
+    public void saveWithIsPublishedFalse(Post post) {
+        postRepository.saveWithIsPublishedFalse(post);
+    }
+
+    public void saveWithIsPublishedTrue(Post post) {
+        postRepository.saveWithIsPublishedTrue(post);
+    }
+
 }

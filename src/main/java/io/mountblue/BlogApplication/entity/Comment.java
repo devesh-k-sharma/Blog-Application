@@ -11,7 +11,7 @@ public class Comment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String name;
-    private String emil;
+    private String email;
     private String comment;
     @ManyToOne
     @JoinColumn(name = "post_id")
@@ -36,7 +36,7 @@ public class Comment {
     public Comment(Long id, String name, String emil, String comment, Post post) {
         this.id = id;
         this.name = name;
-        this.emil = emil;
+        this.email = emil;
         this.comment = comment;
         this.post = post;
     }
@@ -57,12 +57,12 @@ public class Comment {
         this.name = name;
     }
 
-    public String getEmil() {
-        return emil;
+    public String getEmail() {
+        return email;
     }
 
-    public void setEmil(String emil) {
-        this.emil = emil;
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public String getComment() {
