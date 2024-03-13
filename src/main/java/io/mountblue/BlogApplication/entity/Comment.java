@@ -13,7 +13,7 @@ public class Comment {
     private String name;
     private String email;
     private String comment;
-    @ManyToOne
+    @ManyToOne(cascade = {CascadeType.DETACH, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.PERSIST})
     @JoinColumn(name = "post_id")
     private Post post;
     @Column(name = "created_at")

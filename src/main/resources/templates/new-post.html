@@ -3,19 +3,62 @@
 <head>
     <meta charset="UTF-8">
     <title>New Blog</title>
-    <link href="/static/new-post.css" rel="stylesheet">
+    <style>
+        body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0; /* Light gray background */
+    color: #000; /* Black text */
+}
+
+h1 {
+    color: #000; /* Black header */
+}
+
+form {
+    background-color: #fff; /* White background for form */
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1); /* Box shadow for depth */
+}
+
+input[type="text"],
+textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px solid #ddd; /* Light gray border */
+    border-radius: 5px;
+    box-sizing: border-box; /* Ensures padding and border are included in width */
+}
+
+input[type="submit"] {
+    padding: 10px 20px;
+    background-color: #000; /* Black button background */
+    color: #fff; /* White button text */
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+input[type="submit"]:hover {
+    background-color: #333; /* Darker background color on hover */
+}
+
+    </style>
 </head>
 <body>
     <h1>New/Edit Post</h1>
     <form th:action="@{/action}" th:object="${form}" method="POST">
         <input type="text" th:field="*{title}" placeholder="Title">
         <br><br>
-        <input type="text" th:field="*{tags}" placeholder="Tags">
+        <input type="text" name="tagList" placeholder="Tags (comma-separated)">
         <br><br>
         <textarea rows="15" th:field="*{content}"></textarea>
         <br><br>
         <input type="submit" value="Save" name="action">
         <input type="submit" value="Publish" name="action">
+
     </form>
 
 </body>

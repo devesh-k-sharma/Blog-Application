@@ -4,7 +4,127 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>My Blog Application</title>
-    <link rel="stylesheet" href="/static/blog-application-front-page.css">
+    <style>
+        .container {
+    max-width: 960px;
+    margin: 20px auto; /* Center the container with 20px margin on all sides */
+    padding: 0 20px;
+}
+
+header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.title {
+    flex: 1;
+}
+
+.actions {
+    display: flex;
+    gap: 10px;
+    align-items: center; /* Align items vertically */
+}
+
+nav {
+    display: flex;
+    justify-content: flex-end; /* Align dropdowns to the right */
+    margin-bottom: 20px;
+}
+
+.dropdown-container {
+    display: flex;
+    gap: 20px;
+}
+
+.dropdown {
+    position: relative;
+}
+
+.dropbtn {
+    background-color: #f8f9fa;
+    color: #333;
+    padding: 10px 15px;
+    border: none;
+    cursor: pointer;
+    border-radius: 5px;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f8f9fa;
+    min-width: 200px; /* Increase dropdown width */
+    border-radius: 5px;
+    z-index: 1;
+    top: 100%; /* Position dropdown below the button */
+    left: 0; /* Position dropdown aligned with the button */
+}
+
+.dropdown-content a {
+    display: block;
+    padding: 10px 15px;
+    text-decoration: none;
+    color: #333;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.article-container {
+    display: flex;
+    flex-wrap: wrap; /* Allow articles to wrap to the next row */
+    gap: 20px;
+}
+
+.blog-post {
+    width: calc(50% - 10px); /* Make each article take up 50% of the container width with gap */
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 5px;
+    box-sizing: border-box;
+}
+
+#footer {
+    align-items: center;
+    text-align: center;
+}
+
+.search-container {
+    display: flex;
+    align-items: center;
+    max-width: 400px; /* Reduce search container width */
+    margin-right: 20px; /* Add margin between search and login */
+    padding: 10px;
+    border-radius: 10px; /* Add border-radius */
+    border: 1px solid #ccc; /* Add border */
+}
+
+#searchInput {
+    flex: 1;
+    padding: 8px; /* Reduce padding */
+    border: none; /* Remove border */
+    font-size: 14px; /* Reduce font size */
+}
+
+#searchButton {
+    background-color: #4285f4;
+    color: #fff;
+    border: none;
+    padding: 8px 15px; /* Reduce padding */
+    border-radius: 0 10px 10px 0; /* Adjust border radius */
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+#searchButton:hover {
+    background-color: #357ae8;
+}
+
+    </style>
 </head>
 <body>
 <div class="container">
@@ -12,20 +132,22 @@
         <div class="title">
             <h1>My Blog Application</h1>
         </div>
+        <!--
         <div class="actions">
             <form action="/" method="GET" class="search-container">
                 <input type="text" id="searchInput" placeholder="Search">
                 <button id="searchButton">Search</button>
             </form>
             <a href="#" class="action">Login</a>
-        </div>
+        </div> -->
     </header>
+    <!--
     <nav>
         <div class="dropdown-container">
             <div class="dropdown">
                 <button class="dropbtn">Filter</button>
                 <div class="dropdown-content">
-                    <!-- Add filter options here -->
+
                     <a href="#">Filter Option 1</a>
                     <a href="#">Filter Option 2</a>
                     <a href="#">Filter Option 3</a>
@@ -34,14 +156,14 @@
             <div class="dropdown">
                 <button class="dropbtn">Sort</button>
                 <div class="dropdown-content">
-                    <!-- Add sorting options here -->
+
                     <a href="#">Sort Option 1</a>
                     <a href="#">Sort Option 2</a>
                     <a href="#">Sort Option 3</a>
                 </div>
             </div>
         </div>
-    </nav>
+    </nav> -->
     <main id="article-container" class="article-container">
         <!-- Articles will be added dynamically here -->
         <article class="blog-post">

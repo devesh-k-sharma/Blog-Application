@@ -2,15 +2,17 @@ package io.mountblue.BlogApplication.controller;
 
 import io.mountblue.BlogApplication.dao.ServiceImplementation;
 import io.mountblue.BlogApplication.entity.Post;
+import io.mountblue.BlogApplication.entity.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
-@RequestMapping("/blog")
 public class BlogController {
 
     private ServiceImplementation serviceImplementation;
@@ -19,7 +21,7 @@ public class BlogController {
         this.serviceImplementation = serviceImplementation;
     }
 
-    @GetMapping("/page")
+    @GetMapping("/")
     public String showPage(Model model) {
         List<Post> posts = serviceImplementation.showPage();
         model.addAttribute("posts", posts);
@@ -33,28 +35,30 @@ public class BlogController {
     }
 
     @PostMapping("/action")
-    public String saveForm(@ModelAttribute("form") Post post, @RequestParam String action) {
-        if("Publish".equals(action)){
-            return "redirect:/publish";
+    public String saveForm(@ModelAttribute("form") Post post, @RequestParam String action, @RequestParam("tagList") String tagsString) {
+        if ("Publish".equals(action)) {
+            Post existingPost = serviceImplementation.findPostByTitleAndContent(post.getTitle(), post.getContent());
+            if (existingPost != null) {
+                serviceImplementation.publish(existingPost.getId(), true);
+                return "blog-application-front-page";
+            }
+            // If the post doesn't exist, proceed to publish the submitted post
+            post.setIs_published(true);
+            post.setPublished_at(LocalDateTime.now());
         }
         else if ("Save".equals(action)) {
-            return "redirect:/save";
+            post.setIs_published(false);
         }
-        else {
-            return "error";
+        String[] tagNames = tagsString.split(",");
+        List<Tag> tags = new ArrayList<>();
+        for (String tagName : tagNames) {
+            Tag tag = new Tag();
+            tag.setName(tagName);
+            tags.add(tag);
         }
+        post.setTags(tags);
+        serviceImplementation.save(post);
+        return "blog-application-front-page";
     }
 
-    @PostMapping("/publish")
-    public String publishBlog(@ModelAttribute("form") Post post) {
-        serviceImplementation.saveWithIsPublishedTrue(post);
-        return "redirect:/blog-application-front-page";
-    }
-
-    @PostMapping("/save")
-    public String saveBlog(@ModelAttribute("form") Post post) {
-        serviceImplementation.saveWithIsPublishedFalse(post);
-        System.out.println(post.getCreatedAt());
-        return "redirect:/blog-application-front-page";
-    }
 }

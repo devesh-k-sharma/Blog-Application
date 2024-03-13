@@ -8,13 +8,10 @@ import org.springframework.transaction.annotation.Transactional;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
-    @Modifying
     @Transactional
-    @Query("INSERT INTO Post(is_published) VALUES (?1)")
-    void saveWithIsPublishedFalse(Post post);
+    @Modifying
+    @Query("UPDATE Post p SET p.isPublished = :isPublished WHERE p.id = :postId")
+    void updateIsPublishedById(Long postId, boolean isPublished);
+    Post findPostByTitleAndContent(String title, String content);
 
-    @Modifying
-    @Transactional
-    @Query("INSERT INTO Post(is_published) VALUES (?1)")
-    void saveWithIsPublishedTrue(Post post);
 }

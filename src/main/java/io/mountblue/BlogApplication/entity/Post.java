@@ -3,6 +3,7 @@ package io.mountblue.BlogApplication.entity;
 import jakarta.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -15,17 +16,19 @@ public class Post {
     private String excerpt;
     private String content;
     @ManyToOne
-    @JoinColumn(name = "author_id")
+    @JoinColumn(name = "author")
     private User author;
-    private boolean is_published;
-    private LocalDateTime published_at;
+    @Column(name = "is_published")
+    private boolean isPublished;
+    @Column(name = "published_at")
+    private LocalDateTime publishedAt;
     @Column(name = "created_at")
     private LocalDateTime createdAt;
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
-    @OneToMany(mappedBy = "post")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "post")
     private List<Comment> comments;
-    @ManyToMany
+    @ManyToMany(cascade = CascadeType.PERSIST)
     @JoinTable(
             name = "post_tags",
             joinColumns = @JoinColumn(name = "post_id"),
@@ -52,8 +55,8 @@ public class Post {
         this.excerpt = excerpt;
         this.content = content;
         this.author = author;
-        this.is_published = is_published;
-        this.published_at = published_at;
+        this.isPublished = is_published;
+        this.publishedAt = published_at;
         this.createdAt = createdAt;
         this.updatedAt = updatedAt;
         this.comments = comments;
@@ -101,19 +104,19 @@ public class Post {
     }
 
     public boolean isIs_published() {
-        return is_published;
+        return isPublished;
     }
 
     public void setIs_published(boolean is_published) {
-        this.is_published = is_published;
+        this.isPublished = is_published;
     }
 
     public LocalDateTime getPublished_at() {
-        return published_at;
+        return publishedAt;
     }
 
     public void setPublished_at(LocalDateTime published_at) {
-        this.published_at = published_at;
+        this.publishedAt = published_at;
     }
 
     public LocalDateTime getCreatedAt() {
@@ -145,6 +148,17 @@ public class Post {
     }
 
     public void setTags(List<Tag> tags) {
+        this.tags = tags;
+    }
+
+    public void setTagsFromString(String tagsString) {
+        String[] tagNames = tagsString.split("\\s*,\\s*");
+        List<Tag> tags = new ArrayList<>();
+        for (String tagName : tagNames) {
+            Tag tag = new Tag();
+            tag.setName(tagName);
+            tags.add(tag);
+        }
         this.tags = tags;
     }
 }
