@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -81,7 +81,7 @@ nav {
 }
 
 .blog-post {
-    width: calc(50% - 10px); /* Make each article take up 50% of the container width with gap */
+    width: calc(50% - 20px); /* Make each article take up 50% of the container width minus the gap */
     padding: 20px;
     background-color: #f8f9fa;
     border-radius: 5px;
@@ -164,17 +164,21 @@ nav {
             </div>
         </div>
     </nav> -->
+
     <main id="article-container" class="article-container">
-        <!-- Articles will be added dynamically here -->
-        <article class="blog-post">
-            <h2>Devesh, 18/08/2020</h2>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc maximus, nulla ut commodo sagittis, sapien dui mattis dui, non pulvinar lorem felis nec erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc maximus, nulla ut commodo sagittis, sapien dui mattis dui, non pulvinar lorem felis nec erat</p>
-        </article>
-        <article class="blog-post">
-            <h2>Kartiken, 18/08/2020</h2>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc maximus, nulla ut commodo sagittis, sapien dui mattis dui, non pulvinar lorem felis nec erat. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nunc maximus, nulla ut commodo sagittis, sapien dui mattis dui, non pulvinar lorem felis nec erat</p>
-        </article>
+        <div th:each="post : ${posts}">
+            <article class="blog-post">
+                <h2 th:text="${post.title}"></h2>
+                <div style="display: flex; align-items: center;">
+                    <h4>Devesh, </h4>
+                    <h4 th:text="${post.published_at}"></h4>
+                </div>
+
+                <p th:text="${post.excerpt}"></p>
+            </article>
+        </div>
     </main>
+
     <footer id="footer">
         <p>&copy; 2023 My Blog Application. All rights reserved.</p>
     </footer>

@@ -53,4 +53,8 @@ public class ServiceImplementation {
         return postRepository.findPostByTitleAndContent(title, content);
     }
 
+    public List<Post> showAllPublishedBlogs(boolean isPublished) {
+        return postRepository.findPostByIsPublished(isPublished);
+    }
+
 }
