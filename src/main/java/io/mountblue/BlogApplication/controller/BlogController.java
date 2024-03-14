@@ -1,6 +1,7 @@
 package io.mountblue.BlogApplication.controller;
 
 import io.mountblue.BlogApplication.dao.ServiceImplementation;
+import io.mountblue.BlogApplication.entity.Comment;
 import io.mountblue.BlogApplication.entity.Post;
 import io.mountblue.BlogApplication.entity.Tag;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -82,6 +83,9 @@ public class BlogController {
     @GetMapping("/post{postId}")
     public String viewBlogPost(@PathVariable Long postId, Model model) {
         Post post = serviceImplementation.getPostById(postId);
+        List<Comment> comments = post.getComments();
+        System.out.println("Number of comments for post " + postId + ": " + comments.size());
+        model.addAttribute("comments", comments);
         model.addAttribute("post", post);
         return "blogpost";
     }
@@ -139,6 +143,29 @@ public class BlogController {
     public String deleteById(@PathVariable Long postId, Model model) {
         serviceImplementation.delete(postId);
         return "redirect:/";
+    }
+
+//    @PostMapping("/addcomment{postId}")
+//    public String addComment(@PathVariable Long postId, @ModelAttribute("comment") Comment comment, @RequestParam("newComment") String newComment) {
+//        Post post = serviceImplementation.getPostById(postId);
+//        List<Comment> comments = post.getComments();
+//        Comment comment1 = new Comment();
+//        comment1.setComment(newComment);
+//        comments.add(comment1);
+//        post.setComments(comments);
+//        serviceImplementation.save(post);
+//        return "redirect:/post" + postId;
+//    }
+
+    @PostMapping("/addcomment{postId}")
+    public String addComment(@PathVariable Long postId, @ModelAttribute("comment") Comment comment, @RequestParam("newComment") String newCommentText) {
+        Post post = serviceImplementation.getPostById(postId);
+        Comment newComment = new Comment();
+        newComment.setComment(newCommentText);
+        newComment.setPost(post);
+        post.getComments().add(newComment);
+        serviceImplementation.save(post);
+        return "redirect:/post" + postId;
     }
 
 }

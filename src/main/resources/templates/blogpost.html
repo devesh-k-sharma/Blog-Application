@@ -4,46 +4,103 @@
   <meta charset="UTF-8">
   <title>Blog Post</title>
   <style>
-    body {
-    background-color: white;
-    color: black;
-    font-family: Arial, sans-serif;
+    .container {
+  max-width: 1500px;
+  margin: 20px auto;
+  padding: 20px;
+  background-color: white;
+  border: 1px solid gray;
+  border-radius: 5px;
 }
 
-.container {
-    width: 80%;
-    margin: 0 auto;
-    text-align: center;
+.title {
+  text-align: center;
+  margin-bottom: 20px;
 }
 
-h2, p {
-    margin: 10px 0;
+.author {
+  margin-bottom: 10px;
 }
 
-p {
-    font-size: 18px;
+.published {
+  margin-bottom: 10px;
+}
+
+.tags {
+  margin-bottom: 10px;
 }
 
 .content {
-    margin-top: 20px;
-    font-size: 25px;
+  margin-bottom: 20px;
 }
 
 .read-more {
-    display: inline-block;
-    padding: 10px 15px;
-    background-color: gray;
-    color: white;
-    text-decoration: none;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    transition: background-color 0.3s;
+  display: inline-block;
+  padding: 10px 20px;
+  margin-top: 10px;
+  background-color: gray;
+  color: white;
+  text-decoration: none;
+  border: 1px solid black;
+  border-radius: 5px;
 }
 
 .read-more:hover {
-    background-color: black;
+  background-color: black;
+  color: white;
 }
+
+.comment-heading {
+  font-size: 20px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.comment-container {
+  width: calc(200% - 22px);
+  margin: 0 auto;
+  background-color: #f9f9f9;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 10px;
+  margin-bottom: 10px;
+}
+
+.comment-details {
+  font-size: 14px;
+  color: gray;
+}
+
+.comment-name {
+  font-weight: bold;
+}
+
+.comment-time {
+  font-size: 12px;
+}
+
+.form-container {
+  margin-top: 20px;
+}
+
+input[type="text"],
+input[type="submit"] {
+  padding: 10px;
+  margin-bottom: 10px;
+  width: calc(100% - 22px);
+}
+
+input[type="submit"] {
+  background-color: gray;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+input[type="submit"]:hover {
+  background-color: black;
+}
+
 
   </style>
 </head>
@@ -57,6 +114,30 @@ p {
 
   <a th:href="@{'/update'+${post.id}}" class="read-more" >Update</a>
   <a th:href="@{'/delete'+${post.id}}" class="read-more" >Delete</a>
+
+  <br><br>
+
+  <h3>Comments</h3>
+  <div th:each="comment : ${comments}" style="width: 50%; box-sizing: border-box;">
+    <div class="comment-container">
+      <p style="display: inline-block; margin-right: 10px;">Devesh <span th:text="${comment.name}"></span></p>
+      <p style="display: inline-block;"><span th:text="${comment.createdAt}"></span></p>
+
+      <a th:href="@{'/update'+${post.id}}">Update Comment</a>
+      <a th:href="@{'/delete'+${post.id}}">Delete Comment</a>
+
+      <p th:text="${comment.comment}"></p>
+    </div>
+  </div>
+
+
+  <div class="form-container">
+    <form th:action="@{'/addcomment'+${post.id}}" th:object="${comment}" method="POST">
+
+      <input type="text" name="newComment" placeholder="Comment">
+      <input type="submit" value="Post" name="submit">
+    </form>
+  </div>
 
 </div>
 </body>
