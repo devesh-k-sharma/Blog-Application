@@ -26,7 +26,7 @@ public class BlogController {
     public String showPage(Model model) {
         List<Post> posts = serviceImplementation.showAllPublishedBlogs(true);
         model.addAttribute("posts", posts);
-        return "blog-application-front-page";
+        return "all-blogs";
     }
 
     @GetMapping("/newpost")
@@ -42,10 +42,9 @@ public class BlogController {
             Post existingPost = serviceImplementation.findPostByTitleAndContent(post.getTitle(), post.getContent());
             if (existingPost != null) {
                 serviceImplementation.publish(existingPost.getId(), true);
-                return "blog-application-front-page";
+                return "redirect:/";
             }
             post.setIs_published(true);
-
         }
         else if ("Save".equals(action)) {
             post.setIs_published(false);
@@ -54,12 +53,6 @@ public class BlogController {
         String[] words = paragraph.split("\\s+");
         int maxLength = Math.min(words.length, 20);
         String excerpt = String.join(" ", Arrays.copyOf(words, maxLength));
-//        String[] words = paragraph.split("//s+");
-//        StringBuilder result = new StringBuilder();
-//        for(int i=0;i< Math.min(20, words.length);i++) {
-//            result.append(words[i]).append(" ");
-//        }
-//        String excerpt = result.toString().trim();
         post.setExcerpt(excerpt);
         String[] tagNames = tagsString.split(",");
         List<Tag> tags = new ArrayList<>();
@@ -70,7 +63,27 @@ public class BlogController {
         }
         post.setTags(tags);
         serviceImplementation.save(post);
-        return "blog-application-front-page";
+        return "redirect:/";
+    }
+
+    @GetMapping("/post{postId}")
+    public String viewBlogPost(@PathVariable Long postId, Model model) {
+        Post post = serviceImplementation.getPostById(postId);
+        model.addAttribute("post", post);
+        return "blogpost";
+    }
+
+    @GetMapping("/update{postId}")
+    public String updateById(@PathVariable Long postId, Model model) {
+        Post post = serviceImplementation.getPostById(postId);
+        model.addAttribute("form", post);
+        return "new-post";
+    }
+
+    @GetMapping("/delete{postId}")
+    public String deleteById(@PathVariable Long postId, Model model) {
+        serviceImplementation.delete(postId);
+        return "redirect:/";
     }
 
 }

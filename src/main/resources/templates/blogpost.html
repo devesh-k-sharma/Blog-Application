@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title>Blog Post</title>
+  <style>
+    body {
+    background-color: white;
+    color: black;
+    font-family: Arial, sans-serif;
+}
+
+.container {
+    width: 80%;
+    margin: 0 auto;
+    text-align: center;
+}
+
+h2, p {
+    margin: 10px 0;
+}
+
+p {
+    font-size: 18px;
+}
+
+.content {
+    margin-top: 20px;
+    font-size: 25px;
+}
+
+.read-more {
+    display: inline-block;
+    padding: 10px 15px;
+    background-color: gray;
+    color: white;
+    text-decoration: none;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.read-more:hover {
+    background-color: black;
+}
+
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1 class="title" th:text="${post.title}"></h1>
+  <p class="author">Author: <span th:text="${post.author}"></span></p>
+  <p class="published">Published Date: <span th:text="${post.published_at}"></span></p>
+  <p class="tags">Tags: <span th:text="${post.tags}"></span></p>
+  <p class="content" th:text="${post.content}"></p>
+
+  <a th:href="@{'/update'+${post.id}}" class="read-more" >Update</a>
+  <a th:href="@{'/delete'+${post.id}}" class="read-more" >Delete</a>
+
+</div>
+</body>
+</html>
