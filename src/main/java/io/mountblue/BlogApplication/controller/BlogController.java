@@ -35,6 +35,13 @@ public class BlogController {
         return "new-post";
     }
 
+    @GetMapping("/drafts")
+    public String showDraftPage(Model model) {
+        List<Post> posts = serviceImplementation.showAllPublishedBlogs(false);
+        model.addAttribute("posts", posts);
+        return "all-drafts";
+    }
+
     @PostMapping("/action")
     public String saveForm(@ModelAttribute("form") Post post, @RequestParam String action, @RequestParam("tagList") String tagsString) {
         if ("Publish".equals(action)) {
@@ -137,6 +144,7 @@ public class BlogController {
             }
         }
         posts.setTags(tags);
+        serviceImplementation.publish(postId, true);
         serviceImplementation.save(posts);
         return "redirect:/";
     }
