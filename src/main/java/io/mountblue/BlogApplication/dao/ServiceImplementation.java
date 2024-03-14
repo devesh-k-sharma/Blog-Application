@@ -1,5 +1,6 @@
 package io.mountblue.BlogApplication.dao;
 
+import io.mountblue.BlogApplication.entity.Comment;
 import io.mountblue.BlogApplication.entity.Post;
 import io.mountblue.BlogApplication.entity.Tag;
 import io.mountblue.BlogApplication.repository.*;
@@ -74,30 +75,30 @@ public class ServiceImplementation {
         return tags;
     }
 
-    public void updatePost(Long postId, String title, String content, String excerpt, String[] tagNames) {
-        Optional<Post> optionalPost = postRepository.findById(postId);
-        if (optionalPost.isPresent()) {
-            Post post = optionalPost.get();
-            post.setTitle(title);
-            post.setContent(content);
-            post.setExcerpt(excerpt);
-
-            List<Tag> tags = new ArrayList<>();
-            for (String tagName : tagNames) {
-                Tag tag = tagRepository.findByName(tagName);
-                if (tag == null) {
-                    tag = new Tag();
-                    tag.setName(tagName);
-                    tag = tagRepository.save(tag);
-                }
-                tags.add(tag);
+    public void deleteComment(Long commentId, Long postId) {
+        Optional<Comment> optionalComment = commentRepository.findById(commentId);
+        if (optionalComment.isPresent()) {
+            Comment comment = optionalComment.get();
+            if (comment.getPost().getId().equals(postId)) {
+                commentRepository.delete(comment);
+            } else {
+                throw new IllegalArgumentException("No such comment");
             }
-            post.setTags(tags);
-
-            postRepository.save(post);
-        } else {
-            System.out.println("ERROR");
         }
+    }
+
+    public Comment getComment(Long postId, Long commentId) {
+        Optional<Comment> optionalComment = commentRepository.findById(commentId);
+        Comment comments = null;
+        if (optionalComment.isPresent()) {
+            Comment comment = optionalComment.get();
+            if (comment.getPost().getId().equals(postId)) {
+                comments = comment;
+            } else {
+                throw new IllegalArgumentException("No such comment");
+            }
+        }
+        return comments;
     }
 
 }

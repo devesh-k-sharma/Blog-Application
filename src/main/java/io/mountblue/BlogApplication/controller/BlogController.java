@@ -85,6 +85,8 @@ public class BlogController {
         Post post = serviceImplementation.getPostById(postId);
         List<Comment> comments = post.getComments();
         System.out.println("Number of comments for post " + postId + ": " + comments.size());
+        String theComment = null;
+        model.addAttribute("theComment", theComment);
         model.addAttribute("comments", comments);
         model.addAttribute("post", post);
         return "blogpost";
@@ -145,26 +147,42 @@ public class BlogController {
         return "redirect:/";
     }
 
-//    @PostMapping("/addcomment{postId}")
-//    public String addComment(@PathVariable Long postId, @ModelAttribute("comment") Comment comment, @RequestParam("newComment") String newComment) {
-//        Post post = serviceImplementation.getPostById(postId);
-//        List<Comment> comments = post.getComments();
-//        Comment comment1 = new Comment();
-//        comment1.setComment(newComment);
-//        comments.add(comment1);
-//        post.setComments(comments);
-//        serviceImplementation.save(post);
-//        return "redirect:/post" + postId;
-//    }
-
     @PostMapping("/addcomment{postId}")
-    public String addComment(@PathVariable Long postId, @ModelAttribute("comment") Comment comment, @RequestParam("newComment") String newCommentText) {
+    public String addComment(@PathVariable Long postId,@RequestParam("newComment") String newCommentText) {
         Post post = serviceImplementation.getPostById(postId);
         Comment newComment = new Comment();
         newComment.setComment(newCommentText);
         newComment.setPost(post);
         post.getComments().add(newComment);
         serviceImplementation.save(post);
+        return "redirect:/post" + postId;
+    }
+
+    @GetMapping("/updatecomment{postId}/{commentId}")
+    public String updateComment(@PathVariable("postId") Long postId,
+                                @PathVariable("commentId") Long commentId, Model model) {
+        Post post = serviceImplementation.getPostById(postId);
+        List<Comment> comments = post.getComments();
+        Comment comment = serviceImplementation.getComment(postId, commentId);
+        if(comment != null) {
+            String theComment = comment.getComment();
+            model.addAttribute("post", post);
+            model.addAttribute("comments", comments);
+            model.addAttribute("theComment", theComment);
+            model.addAttribute("comment", comment);
+            serviceImplementation.deleteComment(commentId,postId);
+            return "blogpost";
+        }
+        else {
+            return "error";
+        }
+    }
+
+    @GetMapping("/deletecomment{postId}/{commentId}")
+    public String deleteComment(@PathVariable("postId") Long postId,
+                                @PathVariable("commentId") Long commentId) {
+        serviceImplementation.deleteComment(commentId, postId);
+
         return "redirect:/post" + postId;
     }
 

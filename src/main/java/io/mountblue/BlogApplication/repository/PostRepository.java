@@ -19,9 +19,4 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Post findPostByTitleAndContent(String title, String content);
     List<Post> findPostByIsPublished(boolean isPublished);
 
-    @Transactional
-    @Modifying
-    @Query("UPDATE Post p SET p.title = :title, p.content = :content, p.excerpt = :excerpt, p.tags = :tags WHERE p.id = :postId")
-    void updatePost(@Param("postId") Long postId, @Param("title") String title, @Param("content") String content, @Param("excerpt") String excerpt, @Param("tags") List<Tag> tags);
-
 }
