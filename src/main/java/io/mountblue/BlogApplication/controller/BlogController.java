@@ -9,9 +9,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Controller
 public class BlogController {
@@ -45,24 +44,38 @@ public class BlogController {
                 return "redirect:/";
             }
             post.setIs_published(true);
-        }
-        else if ("Save".equals(action)) {
+        } else if ("Save".equals(action)) {
             post.setIs_published(false);
         }
         String paragraph = post.getContent();
         String[] words = paragraph.split("\\s+");
-        int maxLength = Math.min(words.length, 20);
+        int maxLength = Math.min(words.length, 30);
         String excerpt = String.join(" ", Arrays.copyOf(words, maxLength));
         post.setExcerpt(excerpt);
+
         String[] tagNames = tagsString.split(",");
+        Map<String, Tag> existingTagsMap = new HashMap<>();
+        List<Tag> existingTags = serviceImplementation.getAllTags();
+        for (Tag existingTag : existingTags) {
+            existingTagsMap.put(existingTag.getName(), existingTag);
+        }
+
         List<Tag> tags = new ArrayList<>();
         for (String tagName : tagNames) {
-            Tag tag = new Tag();
-            tag.setName(tagName);
-            tags.add(tag);
+            Tag existingTag = existingTagsMap.get(tagName.trim());
+            if (existingTag != null) {
+                tags.add(existingTag);
+            } else {
+                Tag newTag = new Tag();
+                newTag.setName(tagName.trim());
+                Tag savedTag = serviceImplementation.saveTag(newTag);
+                tags.add(savedTag);
+            }
         }
+
         post.setTags(tags);
         serviceImplementation.save(post);
+
         return "redirect:/";
     }
 
@@ -76,8 +89,50 @@ public class BlogController {
     @GetMapping("/update{postId}")
     public String updateById(@PathVariable Long postId, Model model) {
         Post post = serviceImplementation.getPostById(postId);
-        model.addAttribute("form", post);
-        return "new-post";
+        if (post != null) {
+            model.addAttribute("post", post);
+            List<Tag> tags = post.getTags();
+            StringBuilder tagListBuilder = new StringBuilder();
+            for (Tag tag : tags) {
+                tagListBuilder.append(tag.getName()).append(","); // Add a comma after each tag name
+            }
+            String tagList = tagListBuilder.toString();
+            model.addAttribute("mytags", tagList);
+            return "edit-post";
+        } else {
+            return "error";
+        }
+    }
+
+    @PostMapping("/update{postId}")
+    public String updateForm(@PathVariable Long postId, @ModelAttribute("post") Post post, @RequestParam("mytags") String tagsString) {
+        Post posts = serviceImplementation.getPostById(postId);
+        posts.setTitle(post.getTitle());
+        posts.setExcerpt(post.getExcerpt());
+        posts.setContent(post.getContent());
+
+        String[] tagNames = tagsString.split(",");
+        Map<String, Tag> existingTagsMap = new HashMap<>();
+        List<Tag> existingTags = serviceImplementation.getAllTags();
+        for (Tag existingTag : existingTags) {
+            existingTagsMap.put(existingTag.getName(), existingTag);
+        }
+
+        List<Tag> tags = new ArrayList<>();
+        for (String tagName : tagNames) {
+            Tag existingTag = existingTagsMap.get(tagName.trim());
+            if (existingTag != null) {
+                tags.add(existingTag);
+            } else {
+                Tag newTag = new Tag();
+                newTag.setName(tagName.trim());
+                Tag savedTag = serviceImplementation.saveTag(newTag);
+                tags.add(savedTag);
+            }
+        }
+        posts.setTags(tags);
+        serviceImplementation.save(posts);
+        return "redirect:/";
     }
 
     @GetMapping("/delete{postId}")

@@ -4,8 +4,9 @@ import io.mountblue.BlogApplication.entity.Post;
 import io.mountblue.BlogApplication.entity.Tag;
 import io.mountblue.BlogApplication.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.crossstore.ChangeSetPersister;
 import org.springframework.stereotype.Service;
-
+import java.util.*;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,10 +39,6 @@ public class ServiceImplementation {
         postRepository.save(post);
     }
 
-    public void saveTag(Tag tag) {
-        tagRepository.save(tag);
-    }
-
     public List<Post> showAllPosts() {
         List<Post> allPosts=postRepository.findAll();
         return allPosts;
@@ -65,6 +62,42 @@ public class ServiceImplementation {
 
     public void delete(Long id) {
         postRepository.deleteById(id);
+    }
+
+    public List<Tag> getAllTags() {
+        List<Tag> tags = tagRepository.findAll();
+        return tags;
+    }
+
+    public Tag saveTag(Tag tag) {
+        Tag tags = tagRepository.save(tag);
+        return tags;
+    }
+
+    public void updatePost(Long postId, String title, String content, String excerpt, String[] tagNames) {
+        Optional<Post> optionalPost = postRepository.findById(postId);
+        if (optionalPost.isPresent()) {
+            Post post = optionalPost.get();
+            post.setTitle(title);
+            post.setContent(content);
+            post.setExcerpt(excerpt);
+
+            List<Tag> tags = new ArrayList<>();
+            for (String tagName : tagNames) {
+                Tag tag = tagRepository.findByName(tagName);
+                if (tag == null) {
+                    tag = new Tag();
+                    tag.setName(tagName);
+                    tag = tagRepository.save(tag);
+                }
+                tags.add(tag);
+            }
+            post.setTags(tags);
+
+            postRepository.save(post);
+        } else {
+            System.out.println("ERROR");
+        }
     }
 
 }
