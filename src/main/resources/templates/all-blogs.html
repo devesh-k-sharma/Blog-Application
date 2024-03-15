@@ -89,6 +89,50 @@ a.create {
     border: 2px solid black;
 }
 
+.feature-sort {
+    display: inline-block;
+    margin-left: 20px;
+}
+
+.feature-sort a {
+    color: black;
+    text-decoration: none;
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: white;
+    border: 1px solid black;
+    border-radius: 5px;
+}
+
+.feature-sort a:hover {
+    background-color: #f1f1f1;
+}
+
+.feature-sort .dropdown-content {
+    display: none;
+    position: absolute;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1;
+}
+
+.feature-sort .dropdown-content a {
+    color: black;
+    padding: 10px 16px;
+    text-decoration: none;
+    display: block;
+}
+
+.feature-sort .dropdown-content a:hover {
+    background-color: #f1f1f1;
+}
+
+.feature-sort:hover .dropdown-content {
+    display: block;
+}
+
+
     </style>
 </head>
 <body>
@@ -99,8 +143,32 @@ a.create {
         <a th:href="@{/drafts}" class="button">Drafts</a>
         <a th:href="@{/newpost}" class="button">Create</a>
     </div>
-
 </div>
+
+<div class="features">
+    <div class="feature-sort">
+        Sort By:
+        <a th:href="@{/}">Recommended Blogs</a>
+        <div class="dropdown-content">
+            <a th:href="@{/}">Recommended Blogs</a>
+            <a th:href="@{'/sort/' + newest}">Newest Blogs</a>
+            <a th:href="@{'/sort/' + oldest}">Oldest Blogs</a>
+            <a th:href="@{'/sort/' + longest}">Longest Blogs</a>
+            <a th:href="@{'/sort/' + shortest}">Shortest Blogs</a>
+        </div>
+    </div>
+
+    <div class="feature-search">
+        Search:
+        <form action="/search" method="GET">
+            <input type="text" name="searchFor" placeholder="Search for Author, Title, Tag...">
+            <input type="submit" value="Submit">
+        </form>
+
+    </div>
+</div>
+
+
 
 <div class="post-list">
     <div th:each="post : ${posts}" style="width: 50%; box-sizing: border-box;">

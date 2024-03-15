@@ -1,8 +1,6 @@
 package io.mountblue.BlogApplication.dao;
 
-import io.mountblue.BlogApplication.entity.Comment;
-import io.mountblue.BlogApplication.entity.Post;
-import io.mountblue.BlogApplication.entity.Tag;
+import io.mountblue.BlogApplication.entity.*;
 import io.mountblue.BlogApplication.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.crossstore.ChangeSetPersister;
@@ -54,6 +52,54 @@ public class ServiceImplementation {
 
     public List<Post> showAllPublishedBlogs(boolean isPublished) {
         return postRepository.findPostByIsPublished(isPublished);
+    }
+
+    public List<Post> showAllSortBy(String sortType) {
+        if(sortType.equals("newest")){
+            return postRepository.findPostByIsPublishedOrderByPublishedAtDesc(true);
+        }
+        else if (sortType.equals("oldest")) {
+            return postRepository.findPostByIsPublishedOrderByPublishedAtAsc(true);
+        }
+        else if (sortType.equals("longest")) {
+            return postRepository.findPublishedPostsOrderByContentLengthDesc();
+        }
+        else if (sortType.equals("shortest")) {
+            return postRepository.findPublishedPostsOrderByContentLengthAsc();
+        }
+        else {
+            return new ArrayList<>();
+        }
+    }
+
+    public List<Post> showAllSearchBy(String searchFor) {
+        List<Post> posts = new ArrayList<>();
+
+        List<Post> postsByTitle = postRepository.findByTitle(searchFor);
+        if (!postsByTitle.isEmpty()) {
+            return postsByTitle;
+        }
+
+        User user = userRepository.findByName(searchFor);
+        if (user != null) {
+            posts.addAll(user.getPosts());
+            return posts;
+        }
+
+        Tag tag = tagRepository.findByName(searchFor);
+        if (tag != null) {
+            List<PostTag> postTags = postTagRepository.findByTag(tag);
+            for (PostTag postTag : postTags) {
+                posts.add(postTag.getPost());
+            }
+            return posts;
+        }
+
+        List<Post> postByContent = postRepository.findByContentContaining(searchFor);
+        if(!postByContent.isEmpty()) {
+            return postByContent;
+        }
+        throw new IllegalArgumentException("No posts found for: " + searchFor);
     }
 
     public Post getPostById(Long id) {

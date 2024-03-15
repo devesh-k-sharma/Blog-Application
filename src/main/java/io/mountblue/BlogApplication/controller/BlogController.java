@@ -29,6 +29,20 @@ public class BlogController {
         return "all-blogs";
     }
 
+    @GetMapping("/sort/{sortType}")
+    public String sort(@PathVariable String sortType, Model model) {
+        List<Post> posts =serviceImplementation.showAllSortBy(sortType);
+        model.addAttribute("posts", posts);
+        return "all-blogs";
+    }
+
+    @GetMapping("/search")
+    public String search(@RequestParam("searchFor") String searchFor, Model model) {
+        List<Post> posts= serviceImplementation.showAllSearchBy(searchFor);
+        model.addAttribute("posts", posts);
+        return "all-blogs";
+    }
+
     @GetMapping("/newpost")
     public String newPost(Model model) {
         model.addAttribute("form", new Post());
