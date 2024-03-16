@@ -77,13 +77,14 @@ public class ServiceImplementation {
 
         List<Post> postsByTitle = postRepository.findByTitle(searchFor);
         if (!postsByTitle.isEmpty()) {
-            return postsByTitle;
+            //return postsByTitle;
+            posts.addAll(postsByTitle);
         }
 
         User user = userRepository.findByName(searchFor);
         if (user != null) {
             posts.addAll(user.getPosts());
-            return posts;
+            //return posts;
         }
 
         Tag tag = tagRepository.findByName(searchFor);
@@ -92,14 +93,39 @@ public class ServiceImplementation {
             for (PostTag postTag : postTags) {
                 posts.add(postTag.getPost());
             }
-            return posts;
+            //return posts;
         }
 
         List<Post> postByContent = postRepository.findByContentContaining(searchFor);
         if(!postByContent.isEmpty()) {
-            return postByContent;
+            //return postByContent;
+            posts.addAll(postByContent);
         }
-        throw new IllegalArgumentException("No posts found for: " + searchFor);
+        return posts;
+    }
+
+    public List<Post> multipleFeatures(String searchFor, String sortType) {
+        List<Post> posts = showAllSearchBy(searchFor);
+        List<Post> resultPosts = new ArrayList<>();
+        if(sortType.equals("newest")){
+            resultPosts.addAll(postRepository.findPostByIsPublishedOrderByPublishedAtDesc(true, posts));
+            return resultPosts;
+        }
+        else if (sortType.equals("oldest")) {
+            resultPosts.addAll(postRepository.findPostByIsPublishedOrderByPublishedAtAsc(true, posts));
+            return resultPosts;
+        }
+        else if (sortType.equals("longest")) {
+            resultPosts.addAll(postRepository.findPublishedPostsOrderByContentLengthDesc(posts));
+            return resultPosts;
+        }
+        else if (sortType.equals("shortest")) {
+            resultPosts.addAll(postRepository.findPublishedPostsOrderByContentLengthAsc(posts));
+            return resultPosts;
+        }
+        else {
+            return resultPosts;
+        }
     }
 
     public Post getPostById(Long id) {
@@ -146,5 +172,7 @@ public class ServiceImplementation {
         }
         return comments;
     }
+
+
 
 }

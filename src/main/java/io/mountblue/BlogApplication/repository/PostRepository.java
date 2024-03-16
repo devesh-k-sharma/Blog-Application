@@ -33,4 +33,16 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p.content LIKE %:content%")
     List<Post> findByContentContaining(@Param("content") String content);
+
+    @Query("SELECT p FROM Post p WHERE p.isPublished = ?1 AND p IN ?2 ORDER BY p.publishedAt DESC")
+    List<Post> findPostByIsPublishedOrderByPublishedAtDesc(boolean isPublished, List<Post> posts);
+
+    @Query("SELECT p FROM Post p WHERE p.isPublished = ?1 AND p IN ?2 ORDER BY p.publishedAt ASC")
+    List<Post> findPostByIsPublishedOrderByPublishedAtAsc(boolean isPublished, List<Post> posts);
+
+    @Query("SELECT p FROM Post p WHERE p.isPublished = true AND p IN :posts ORDER BY LENGTH(p.content) ASC")
+    List<Post> findPublishedPostsOrderByContentLengthAsc(List<Post> posts);
+
+    @Query("SELECT p FROM Post p WHERE p.isPublished = true AND p IN :posts ORDER BY LENGTH(p.content) DESC")
+    List<Post> findPublishedPostsOrderByContentLengthDesc(List<Post> posts);
 }

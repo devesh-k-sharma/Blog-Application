@@ -89,48 +89,66 @@ a.create {
     border: 2px solid black;
 }
 
-.feature-sort {
-    display: inline-block;
-    margin-left: 20px;
+.features {
+    display: flex;
+    align-items: center; /* Align items vertically */
 }
 
-.feature-sort a {
+.dropdown {
+    position: relative;
+}
+
+.dropbtn {
+    background-color: #ffffff;
     color: black;
-    text-decoration: none;
-    display: inline-block;
-    padding: 10px 20px;
-    background-color: white;
-    border: 1px solid black;
-    border-radius: 5px;
+    padding: 10px;
+    border: none;
+    cursor: pointer;
 }
 
-.feature-sort a:hover {
-    background-color: #f1f1f1;
-}
-
-.feature-sort .dropdown-content {
+.dropdown-content {
     display: none;
     position: absolute;
     background-color: #f9f9f9;
-    min-width: 160px;
-    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    min-width: 100px;
+    box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
     z-index: 1;
 }
 
-.feature-sort .dropdown-content a {
-    color: black;
-    padding: 10px 16px;
-    text-decoration: none;
+.dropdown-content button {
+    width: 100%;
+    text-align: left;
+    padding: 10px;
+    border: none;
+    background-color: transparent;
+}
+
+.dropdown:hover .dropdown-content {
     display: block;
 }
 
-.feature-sort .dropdown-content a:hover {
-    background-color: #f1f1f1;
+input[type="text"] {
+    margin-left: 10px; /* Add margin to separate from dropdown */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
 }
 
-.feature-sort:hover .dropdown-content {
-    display: block;
+button[type="submit"] {
+    padding: 10px;
+    background-color: gray;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
 }
+
+button[type="submit"]:hover {
+    background-color: black;
+}
+
+
+
 
 
     </style>
@@ -146,9 +164,36 @@ a.create {
 </div>
 
 <div class="features">
+    <form action="/features" method="GET">
+        <div class="dropdown">
+            <div class="dropbtn">Sort By </div>
+            <div class="dropdown-content">
+                <button type="submit" name="sortType" value="newest">Newest Blogs</button>
+                <button type="submit" name="sortType" value="oldest">Oldest Blogs</button>
+                <button type="submit" name="sortType" value="longest">Longest Blogs</button>
+                <button type="submit" name="sortType" value="shortest">Shortest Blogs</button>
+            </div>
+        </div>
+        <input type="text" name="searchFor" th:value="${searchFor}" placeholder="Enter Additional Data">
+        <button type="submit">Search</button>
+    </form>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+    <!--
     <div class="feature-sort">
         Sort By:
-        <a th:href="@{/}">Recommended Blogs</a>
+        <a th:href="@{/}">Choose One</a>
         <div class="dropdown-content">
             <a th:href="@{/}">Recommended Blogs</a>
             <a th:href="@{'/sort/' + newest}">Newest Blogs</a>
@@ -157,6 +202,20 @@ a.create {
             <a th:href="@{'/sort/' + shortest}">Shortest Blogs</a>
         </div>
     </div>
+
+    <div class="feature-sort">
+        Sort By:
+        <div class="dropdown-content">
+            <form th:action="@{/sort}" method="get">
+                <input type="hidden" name="searchFor" th:value="${searchFor}" />
+                <button type="submit" name="sortType" value="newest">Newest Blogs</button>
+                <button type="submit" name="sortType" value="oldest">Oldest Blogs</button>
+                <button type="submit" name="sortType" value="longest">Longest Blogs</button>
+                <button type="submit" name="sortType" value="shortest">Shortest Blogs</button>
+            </form>
+        </div>
+    </div>
+
 
     <div class="feature-search">
         Search:
@@ -167,7 +226,31 @@ a.create {
 
     </div>
 </div>
+-->
 
+<!--
+<div class="features">
+    <form action="/" method="get">
+        <div class="feature-sort">
+            Sort By:
+            <select name="sortType">
+                <option value="recommended">Recommended Blogs</option>
+                <option value="newest">Newest Blogs</option>
+                <option value="oldest">Oldest Blogs</option>
+                <option value="longest">Longest Blogs</option>
+                <option value="shortest">Shortest Blogs</option>
+            </select>
+        </div>
+
+        <div class="feature-search">
+            Search:
+            <input type="text" name="searchFor" placeholder="Search for Author, Title, Tag...">
+        </div>
+
+        <input type="submit" value="Submit">
+    </form>
+</div>
+-->
 
 
 <div class="post-list">

@@ -25,23 +25,61 @@ public class BlogController {
     @GetMapping("/")
     public String showPage(Model model) {
         List<Post> posts = serviceImplementation.showAllPublishedBlogs(true);
+        String search = "search.....";
+        model.addAttribute("searchbar", search);
         model.addAttribute("posts", posts);
         return "all-blogs";
     }
 
-    @GetMapping("/sort/{sortType}")
-    public String sort(@PathVariable String sortType, Model model) {
-        List<Post> posts =serviceImplementation.showAllSortBy(sortType);
+    @GetMapping("/features")
+    public String showFeaturesPage(@RequestParam(value = "sortType", required = false) String sortType,
+                                   @RequestParam(value = "searchFor", required = false) String searchFor,
+                                   Model model) {
+        List<Post> posts = new ArrayList<>();
+        System.out.println(searchFor);
+        if(sortType != null && (searchFor == null || searchFor.equals("search.....") || searchFor.isEmpty())) {
+            posts.addAll(serviceImplementation.showAllSortBy(sortType));
+        } else if (sortType == null && searchFor != null && !searchFor.equals("search.....")) {
+            posts.addAll(serviceImplementation.showAllSearchBy(searchFor));
+        } else if (sortType != null && !searchFor.isEmpty()) {
+            posts.addAll(serviceImplementation.multipleFeatures(searchFor,sortType));
+        } else {
+            return "redirect:/";
+        }
+        model.addAttribute("searchFor", searchFor);
         model.addAttribute("posts", posts);
+
         return "all-blogs";
     }
 
-    @GetMapping("/search")
-    public String search(@RequestParam("searchFor") String searchFor, Model model) {
-        List<Post> posts= serviceImplementation.showAllSearchBy(searchFor);
-        model.addAttribute("posts", posts);
-        return "all-blogs";
-    }
+//    @GetMapping("/sort/{sortType}")
+//    public String sort(@PathVariable String sortType, Model model) {
+//        List<Post> posts =serviceImplementation.showAllSortBy(sortType);
+//        model.addAttribute("posts", posts);
+//        return "all-blogs";
+//    }
+
+//    @GetMapping("/sort")
+//    public String sortBlogs(@RequestParam(value = "sortType") String sortType,
+//                            @RequestParam(value = "searchFor", required = false) String searchFor,
+//                            Model model) {
+//        List<Post> posts;
+//
+//        if (searchFor != null && !searchFor.isEmpty()) {
+//            posts = serviceImplementation.sortSearchResults(searchFor, sortType);
+//        } else {
+//            posts = serviceImplementation.showAllSortBy(sortType);
+//        }
+//        model.addAttribute("posts", posts);
+//        return "all-blogs";
+//    }
+//
+//    @GetMapping("/search")
+//    public String search(@RequestParam("searchFor") String searchFor, Model model) {
+//        List<Post> posts= serviceImplementation.showAllSearchBy(searchFor);
+//        model.addAttribute("posts", posts);
+//        return "all-blogs";
+//    }
 
     @GetMapping("/newpost")
     public String newPost(Model model) {
@@ -107,6 +145,13 @@ public class BlogController {
         List<Comment> comments = post.getComments();
         System.out.println("Number of comments for post " + postId + ": " + comments.size());
         String theComment = null;
+        List<Tag> tags = post.getTags();
+        StringBuilder tagListBuilder = new StringBuilder();
+        for (Tag tag : tags) {
+            tagListBuilder.append(tag.getName()).append(" "); // Add a comma after each tag name
+        }
+        String tagList = tagListBuilder.toString();
+        model.addAttribute("mytags", tagList);
         model.addAttribute("theComment", theComment);
         model.addAttribute("comments", comments);
         model.addAttribute("post", post);
