@@ -151,6 +151,22 @@ public class Post {
         this.tags = tags;
     }
 
+    public boolean isPublished() {
+        return isPublished;
+    }
+
+    public void setPublished(boolean published) {
+        isPublished = published;
+    }
+
+    public LocalDateTime getPublishedAt() {
+        return publishedAt;
+    }
+
+    public void setPublishedAt(LocalDateTime publishedAt) {
+        this.publishedAt = publishedAt;
+    }
+
     public void setTagsFromString(String tagsString) {
         String[] tagNames = tagsString.split("\\s*,\\s*");
         List<Tag> tags = new ArrayList<>();

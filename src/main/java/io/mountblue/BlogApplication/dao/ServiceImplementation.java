@@ -3,8 +3,12 @@ package io.mountblue.BlogApplication.dao;
 import io.mountblue.BlogApplication.entity.*;
 import io.mountblue.BlogApplication.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.crossstore.ChangeSetPersister;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.List;
 import java.util.Optional;
@@ -34,6 +38,24 @@ public class ServiceImplementation {
         return postDBData;
     }
 
+    public LocalDate oldestDate() {
+        List<Post> posts = postRepository.findByIsPublishedOrderByPublishedAtAsc(true);
+        if (!posts.isEmpty()) {
+            return posts.getFirst().getPublishedAt().toLocalDate();
+        } else {
+            return null;
+        }
+    }
+
+    public LocalDate newestDate() {
+        List<Post> posts = postRepository.findByIsPublishedOrderByPublishedAtDesc(true);
+        if (!posts.isEmpty()) {
+            return posts.getFirst().getPublishedAt().toLocalDate();
+        } else {
+            return null;
+        }
+    }
+
     public void save(Post post) {
         postRepository.save(post);
     }
@@ -50,32 +72,35 @@ public class ServiceImplementation {
         return postRepository.findPostByTitleAndContent(title, content);
     }
 
+    public Page<Post> showAllPublishedBlogsPaged(boolean isPublished, Pageable pageable) {
+        return postRepository.findByIsPublished(isPublished, pageable);
+    }
     public List<Post> showAllPublishedBlogs(boolean isPublished) {
         return postRepository.findPostByIsPublished(isPublished);
     }
 
-    public List<Post> showAllSortBy(String sortType) {
-        if(sortType.equals("newest")){
-            return postRepository.findPostByIsPublishedOrderByPublishedAtDesc(true);
-        }
-        else if (sortType.equals("oldest")) {
-            return postRepository.findPostByIsPublishedOrderByPublishedAtAsc(true);
-        }
-        else if (sortType.equals("longest")) {
-            return postRepository.findPublishedPostsOrderByContentLengthDesc();
-        }
-        else if (sortType.equals("shortest")) {
-            return postRepository.findPublishedPostsOrderByContentLengthAsc();
-        }
-        else {
-            return new ArrayList<>();
-        }
-    }
-
+//    public List<Post> showAllSortBy(String sortType) {
+//        if(sortType.equals("newest")){
+//            return postRepository.findPostByIsPublishedOrderByPublishedAtDesc(true);
+//        }
+//        else if (sortType.equals("oldest")) {
+//            return postRepository.findPostByIsPublishedOrderByPublishedAtAsc(true);
+//        }
+//        else if (sortType.equals("longest")) {
+//            return postRepository.findPublishedPostsOrderByContentLengthDesc();
+//        }
+//        else if (sortType.equals("shortest")) {
+//            return postRepository.findPublishedPostsOrderByContentLengthAsc();
+//        }
+//        else {
+//            return new ArrayList<>();
+//        }
+//    }
+//
     public List<Post> showAllSearchBy(String searchFor) {
-        List<Post> posts = new ArrayList<>();
+        Set<Post> posts = new HashSet<>();
 
-        List<Post> postsByTitle = postRepository.findByTitle(searchFor);
+        List<Post> postsByTitle = postRepository.findByTitleAndIsPublished(searchFor, true);
         if (!postsByTitle.isEmpty()) {
             //return postsByTitle;
             posts.addAll(postsByTitle);
@@ -87,7 +112,7 @@ public class ServiceImplementation {
             //return posts;
         }
 
-        Tag tag = tagRepository.findByName(searchFor);
+        Tag tag = tagRepository.findFirstByName(searchFor);
         if (tag != null) {
             List<PostTag> postTags = postTagRepository.findByTag(tag);
             for (PostTag postTag : postTags) {
@@ -101,32 +126,92 @@ public class ServiceImplementation {
             //return postByContent;
             posts.addAll(postByContent);
         }
-        return posts;
+        List<Post> resultPosts = new ArrayList<>(posts);
+        return resultPosts;
     }
 
-    public List<Post> multipleFeatures(String searchFor, String sortType) {
-        List<Post> posts = showAllSearchBy(searchFor);
+    public List<Post> filterBy(List<String> selectedAuthors, List<String> selectedTags, List<Post> posts) {
         List<Post> resultPosts = new ArrayList<>();
-        if(sortType.equals("newest")){
-            resultPosts.addAll(postRepository.findPostByIsPublishedOrderByPublishedAtDesc(true, posts));
-            return resultPosts;
+        if(selectedAuthors != null && selectedTags == null) {
+            for(String authors : selectedAuthors) {
+                User user = userRepository.findByName(authors);
+                resultPosts.addAll(postRepository.findByAuthor(user));
+            }
         }
-        else if (sortType.equals("oldest")) {
-            resultPosts.addAll(postRepository.findPostByIsPublishedOrderByPublishedAtAsc(true, posts));
-            return resultPosts;
+        else if (selectedTags != null && selectedAuthors == null) {
+            for(String tags: selectedTags) {
+                Tag tag = tagRepository.findFirstByName(tags);
+                resultPosts.addAll(postRepository.findByTagInPosts(tag, posts));
+            }
+        } else if (selectedTags != null && selectedAuthors != null) {
+            User user = new User();
+            Tag tag = new Tag();
+            for(String authors : selectedAuthors) {
+                user = userRepository.findByName(authors);
+            }
+            for(String tags: selectedTags) {
+                tag = tagRepository.findFirstByName(tags);
+            }
+            resultPosts.addAll(postRepository.findPostByAuthorOrTags(user, tag));
         }
-        else if (sortType.equals("longest")) {
-            resultPosts.addAll(postRepository.findPublishedPostsOrderByContentLengthDesc(posts));
-            return resultPosts;
-        }
-        else if (sortType.equals("shortest")) {
-            resultPosts.addAll(postRepository.findPublishedPostsOrderByContentLengthAsc(posts));
-            return resultPosts;
-        }
-        else {
-            return resultPosts;
-        }
+        return resultPosts;
     }
+
+
+    public List<Post> showAllSortBy(String sortType, List<Post> posts) {
+
+        List<Post> resultPosts = new ArrayList<>();
+            if(sortType.equals("newest")){
+                resultPosts.addAll(postRepository.findPostByIsPublishedOrderByPublishedAtDesc(true, posts));
+                return resultPosts;
+            }
+            else if (sortType.equals("oldest")) {
+                resultPosts.addAll(postRepository.findPostByIsPublishedOrderByPublishedAtAsc(true, posts));
+                return resultPosts;
+            }
+            else if (sortType.equals("longest")) {
+                resultPosts.addAll(postRepository.findPublishedPostsOrderByContentLengthDesc(posts));
+                return resultPosts;
+            }
+            else if (sortType.equals("shortest")) {
+                resultPosts.addAll(postRepository.findPublishedPostsOrderByContentLengthAsc(posts));
+                return resultPosts;
+            }
+            else {
+                return resultPosts;
+            }
+    }
+
+//    public List<Post> multipleFeatures(String searchFor, String sortType, List<String> selectedAuthors, List<String> selectedTags) {
+//        List<Post> posts = new ArrayList<>();
+//        if(!searchFor.isEmpty()) {
+//            posts = showAllSearchBy(searchFor);
+//        }
+//        List<Post> resultPosts = new ArrayList<>();
+//        if(sortType != null) {
+//            if(sortType.equals("newest")){
+//                resultPosts.addAll(postRepository.findPostByIsPublishedOrderByPublishedAtDesc(true, posts));
+//                return resultPosts;
+//            }
+//            else if (sortType.equals("oldest")) {
+//                resultPosts.addAll(postRepository.findPostByIsPublishedOrderByPublishedAtAsc(true, posts));
+//                return resultPosts;
+//            }
+//            else if (sortType.equals("longest")) {
+//                resultPosts.addAll(postRepository.findPublishedPostsOrderByContentLengthDesc(posts));
+//                return resultPosts;
+//            }
+//            else if (sortType.equals("shortest")) {
+//                resultPosts.addAll(postRepository.findPublishedPostsOrderByContentLengthAsc(posts));
+//                return resultPosts;
+//            }
+//            else {
+//                return resultPosts;
+//            }
+//
+//        }
+//        return posts;
+//    }
 
     public Post getPostById(Long id) {
         Optional<Post> postOptional = postRepository.findById(id);
@@ -173,6 +258,33 @@ public class ServiceImplementation {
         return comments;
     }
 
+    static String search = "";
+
+    public List<Post> features(String searchFor, String sortBy, List<String> selectedAuthors, List<String> selectedTags, LocalDateTime startDateTime, LocalDateTime endDateTime) {
+        List<Post> posts = new ArrayList<>();
+        if (searchFor != null && !searchFor.isEmpty() && !searchFor.equals(search)) {
+            posts.addAll(showAllSearchBy(searchFor));
+            search = searchFor;
+            return posts;
+        } else {
+            posts.addAll(postRepository.findAll());
+        }
+
+        if (selectedAuthors != null || selectedTags != null) {
+            posts = filterBy(selectedAuthors, selectedTags, posts);
+        }
+
+        if (sortBy != null) {
+            posts = showAllSortBy(sortBy, posts);
+        }
+
+        if (startDateTime != null && endDateTime != null) {
+            posts = postRepository.findPostsInListAndBetweenDateTime(startDateTime, endDateTime, posts);
+        }
+
+        Set<Post> set = new HashSet<>(posts);
+        return new ArrayList<>(set);
+    }
 
 
 }

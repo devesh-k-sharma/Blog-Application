@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml">
+<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -96,6 +96,7 @@ a.create {
 
 .dropdown {
     position: relative;
+    margin-right: 10px; /* Add margin to separate from search bar */
 }
 
 .dropbtn {
@@ -128,7 +129,6 @@ a.create {
 }
 
 input[type="text"] {
-    margin-left: 10px; /* Add margin to separate from dropdown */
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 5px;
@@ -151,6 +151,7 @@ button[type="submit"]:hover {
 
 
 
+
     </style>
 </head>
 <body>
@@ -166,7 +167,7 @@ button[type="submit"]:hover {
 <div class="features">
     <form action="/features" method="GET">
         <div class="dropdown">
-            <div class="dropbtn">Sort By </div>
+            <div class="dropbtn">Sort The Blog By </div>
             <div class="dropdown-content">
                 <button type="submit" name="sortType" value="newest">Newest Blogs</button>
                 <button type="submit" name="sortType" value="oldest">Oldest Blogs</button>
@@ -174,83 +175,42 @@ button[type="submit"]:hover {
                 <button type="submit" name="sortType" value="shortest">Shortest Blogs</button>
             </div>
         </div>
-        <input type="text" name="searchFor" th:value="${searchFor}" placeholder="Enter Additional Data">
-        <button type="submit">Search</button>
+        <div class="search-bar">
+            <input type="text" name="searchFor" th:value="${searchFor}" placeholder="Search for author, title, tags">
+            <button type="submit">Search</button>
+        </div>
+        <div class="filter-checkboxes">
+            Authors
+            <div th:each="author : ${authors}">
+                <input type="checkbox" name="filter-author" th:value="${author}" th:checked="${selectedAuthors != null && selectedAuthors.contains(author)}" onchange="this.form.submit()">
+                <span th:text="${author}"></span>
+                <br>
+            </div>
+            Tags
+            <div th:each="tag : ${tags}">
+                <input type="checkbox" name="filter-tags" th:value="${tag}" th:checked="${selectedTags != null && selectedTags.contains(tag)}" onchange="this.form.submit()">
+                <span th:text="${tag}"></span>
+                <br>
+            </div>
+
+        </div>
+        Published Date:
+        <div>
+            <label for="startDate">Start Date:</label>
+            <input type="date" id="startDate" name="startDate">
+
+            <label for="endDate">End Date:</label>
+            <input type="date" id="endDate" name="endDate">
+
+
+            <button type="submit">Search</button>
+
+
+        </div>
+
     </form>
 </div>
 
-
-
-
-
-
-
-
-
-
-
-
-    <!--
-    <div class="feature-sort">
-        Sort By:
-        <a th:href="@{/}">Choose One</a>
-        <div class="dropdown-content">
-            <a th:href="@{/}">Recommended Blogs</a>
-            <a th:href="@{'/sort/' + newest}">Newest Blogs</a>
-            <a th:href="@{'/sort/' + oldest}">Oldest Blogs</a>
-            <a th:href="@{'/sort/' + longest}">Longest Blogs</a>
-            <a th:href="@{'/sort/' + shortest}">Shortest Blogs</a>
-        </div>
-    </div>
-
-    <div class="feature-sort">
-        Sort By:
-        <div class="dropdown-content">
-            <form th:action="@{/sort}" method="get">
-                <input type="hidden" name="searchFor" th:value="${searchFor}" />
-                <button type="submit" name="sortType" value="newest">Newest Blogs</button>
-                <button type="submit" name="sortType" value="oldest">Oldest Blogs</button>
-                <button type="submit" name="sortType" value="longest">Longest Blogs</button>
-                <button type="submit" name="sortType" value="shortest">Shortest Blogs</button>
-            </form>
-        </div>
-    </div>
-
-
-    <div class="feature-search">
-        Search:
-        <form action="/search" method="GET">
-            <input type="text" name="searchFor" placeholder="Search for Author, Title, Tag...">
-            <input type="submit" value="Submit">
-        </form>
-
-    </div>
-</div>
--->
-
-<!--
-<div class="features">
-    <form action="/" method="get">
-        <div class="feature-sort">
-            Sort By:
-            <select name="sortType">
-                <option value="recommended">Recommended Blogs</option>
-                <option value="newest">Newest Blogs</option>
-                <option value="oldest">Oldest Blogs</option>
-                <option value="longest">Longest Blogs</option>
-                <option value="shortest">Shortest Blogs</option>
-            </select>
-        </div>
-
-        <div class="feature-search">
-            Search:
-            <input type="text" name="searchFor" placeholder="Search for Author, Title, Tag...">
-        </div>
-
-        <input type="submit" value="Submit">
-    </form>
-</div>
--->
 
 
 <div class="post-list">
@@ -260,10 +220,19 @@ button[type="submit"]:hover {
             <p>Author: <span th:text="${post.author}"></span></p>
             <p>Published Date: <span th:text="${post.published_at}"></span></p>
             <p th:text="${post.excerpt}"></p>
-            <a th:href="@{'/post'+${post.id}}" class="read-more" style="text-decoration: none; color: inherit;">Read more...</a>
+            <a th:href="@{'/' + ${i}}(page=${i}, size=${posts.size})" th:text="${i + 1}">Page 1</a>
         </div>
-    </div>
+</div><!--
+<div th:if="${posts.totalPages > 1}">
+    <ul class="pagination">
+        <li th:each="i : ${#numbers.sequence(0, posts.totalPages - 1)}"
+            th:class="${posts.number == i} ? 'active' : ''">
+            <a th:href="@{'/' + ${i}} + '?page=' + ${i} + '&size=' + ${posts.size}" th:text="${i + 1}">Page 1</a>
+
+        </li>
+    </ul>
 </div>
+-->
 
 </body>
 </html>

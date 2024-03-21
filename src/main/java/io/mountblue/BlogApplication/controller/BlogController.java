@@ -4,11 +4,19 @@ import io.mountblue.BlogApplication.dao.ServiceImplementation;
 import io.mountblue.BlogApplication.entity.Comment;
 import io.mountblue.BlogApplication.entity.Post;
 import io.mountblue.BlogApplication.entity.Tag;
+import io.mountblue.BlogApplication.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Arrays;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -24,33 +32,189 @@ public class BlogController {
 
     @GetMapping("/")
     public String showPage(Model model) {
-        List<Post> posts = serviceImplementation.showAllPublishedBlogs(true);
+
+
+
+        //List<Post> posts = postList.getContent();
+         List<Post> posts = serviceImplementation.showAllPublishedBlogs(true);
+        List<Tag> tags = new ArrayList<>();
+        //List<String> author = new ArrayList<>();
         String search = "search.....";
+        List<String> tagList = new ArrayList<>();
+        for(Post post: posts) {
+            tags = post.getTags();
+            User users = post.getAuthor();
+            //author.add(users.getName());
+            for(Tag tag: tags) {
+                if(!tagList.contains(tag.getName())){
+                    tagList.add(tag.getName());
+                }
+            }
+        }
+        List<String> author = new ArrayList<>();
+//        LocalDate oldestDate = serviceImplementation.oldestDate();
+//        LocalDate newestDate = serviceImplementation.newestDate();
+        model.addAttribute("tags" , tagList);
+        model.addAttribute("author", author);
         model.addAttribute("searchbar", search);
         model.addAttribute("posts", posts);
+//        model.addAttribute("startDate", oldestDate);
+//        model.addAttribute("endDate", newestDate);
         return "all-blogs";
     }
 
+//    @GetMapping("/")
+//    public String showPage(@RequestParam(defaultValue = "0") String pageStr,
+//                           @RequestParam(defaultValue = "10") String sizeStr,
+//                           Model model) {
+//        int page;
+//        int size;
+//        try {
+//            page = Integer.parseInt(pageStr);
+//            size = Integer.parseInt(sizeStr);
+//        } catch (NumberFormatException e) {
+//            page = 0;
+//            size = 10;
+//        }
+//        Pageable pageable = PageRequest.of(page, size);
+//        Page<Post> posts = serviceImplementation.showAllPublishedBlogsPaged(true, pageable);
+//
+//        //List<Post> posts = postList.getContent();
+//        // List<Post> posts = serviceImplementation.showAllPublishedBlogs(true);
+//        List<Tag> tags = new ArrayList<>();
+//        //List<String> author = new ArrayList<>();
+//        String search = "search.....";
+//        List<String> tagList = new ArrayList<>();
+//        for(Post post: posts) {
+//            tags = post.getTags();
+//            User users = post.getAuthor();
+//            //author.add(users.getName());
+//            for(Tag tag: tags) {
+//                if(!tagList.contains(tag.getName())){
+//                    tagList.add(tag.getName());
+//                }
+//            }
+//        }
+//        List<String> author = new ArrayList<>();
+////        LocalDate oldestDate = serviceImplementation.oldestDate();
+////        LocalDate newestDate = serviceImplementation.newestDate();
+//        model.addAttribute("tags" , tagList);
+//        model.addAttribute("author", author);
+//        model.addAttribute("searchbar", search);
+//        model.addAttribute("posts", posts);
+////        model.addAttribute("startDate", oldestDate);
+////        model.addAttribute("endDate", newestDate);
+//        return "all-blogs";
+//    }
+
+    static String search = "";
     @GetMapping("/features")
-    public String showFeaturesPage(@RequestParam(value = "sortType", required = false) String sortType,
-                                   @RequestParam(value = "searchFor", required = false) String searchFor,
-                                   Model model) {
+    public String showFeaturePage(@RequestParam(value = "sortType", required = false) String sortType,
+                                  @RequestParam(value = "searchFor", required = false) String searchFor,
+                                  @RequestParam(value = "filter-author", required = false) List<String> selectedAuthors,
+                                  @RequestParam(value = "filter-tags", required = false) List<String> selectedTags,
+                                  @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+                                  @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+                                  Model model) {
         List<Post> posts = new ArrayList<>();
-        System.out.println(searchFor);
-        if(sortType != null && (searchFor == null || searchFor.equals("search.....") || searchFor.isEmpty())) {
-            posts.addAll(serviceImplementation.showAllSortBy(sortType));
-        } else if (sortType == null && searchFor != null && !searchFor.equals("search.....")) {
-            posts.addAll(serviceImplementation.showAllSearchBy(searchFor));
-        } else if (sortType != null && !searchFor.isEmpty()) {
-            posts.addAll(serviceImplementation.multipleFeatures(searchFor,sortType));
-        } else {
-            return "redirect:/";
+        LocalDateTime startDateTime = startDate != null ? LocalDateTime.of(startDate, LocalTime.MIN) : null;
+        LocalDateTime endDateTime = endDate != null ? LocalDateTime.of(endDate, LocalTime.MAX) : null;
+        posts = serviceImplementation.features(searchFor, sortType, selectedAuthors, selectedTags, startDateTime, endDateTime);
+//        if(searchFor.equals(search)) {
+//            posts = serviceImplementation.features(searchFor, sortType, selectedAuthors, selectedTags);
+//        }
+//        else {
+//            selectedAuthors = new ArrayList<>();
+//            selectedTags = new ArrayList<>();
+//            posts = serviceImplementation.features(searchFor, sortType, selectedAuthors, selectedTags);
+//            search = searchFor;
+//        }
+        List<Tag> tags = new ArrayList<>();
+        List<String> tagList = new ArrayList<>();
+        for(Post post: posts) {
+            tags = post.getTags();
+            User users = post.getAuthor();
+            //author.add(users.getName());
+            for(Tag tag: tags) {
+                if(!tagList.contains(tag.getName())){
+                    tagList.add(tag.getName());
+                }
+            }
         }
-        model.addAttribute("searchFor", searchFor);
+        List<String> author = new ArrayList<>();
+        model.addAttribute("startDate", startDate);
+        model.addAttribute("endDate", endDate);
+        model.addAttribute("tags" , tagList);
+        model.addAttribute("author", author);
         model.addAttribute("posts", posts);
+        model.addAttribute("selectedAuthors", selectedAuthors);
+        model.addAttribute("selectedTags", selectedTags);
+        model.addAttribute("searchFor", searchFor);
 
         return "all-blogs";
     }
+
+
+
+
+//    @GetMapping("/features")
+//    public String showFeaturesPage(@RequestParam(value = "sortType", required = false) String sortType,
+//                                   @RequestParam(value = "searchFor", required = false) String searchFor,
+//                                   @RequestParam(value = "filter-author", required = false) List<String> selectedAuthors,
+//                                   @RequestParam(value = "filter-tags", required = false) List<String> selectedTags,
+//                                   Model model) {
+//        List<Post> posts = new ArrayList<>();
+//        List<String> features = new ArrayList<>();
+//        features.addAll(selectedAuthors);
+//        features.addAll(selectedTags);
+//        System.out.println(features);
+////        if(sortType != null && searchFor.isEmpty() && features == null) {
+////            posts.addAll(serviceImplementation.showAllSortBy(sortType));
+////        } else if (sortType == null && searchFor != null && features == null) {
+////            posts.addAll(serviceImplementation.showAllSearchBy(searchFor));
+////            selectedAuthors.clear();
+////            selectedTags.clear();
+////        } else if (sortType != null && !searchFor.isEmpty() && features == null) {
+////            posts.addAll(serviceImplementation.multipleFeatures(searchFor, sortType, selectedAuthors, selectedTags));
+////        } else if (sortType == null && searchFor.isEmpty() && features != null) {
+////            posts.addAll(serviceImplementation.filterBy(selectedAuthors, selectedTags));
+////        }
+////        else if (sortType == null && !searchFor.isEmpty() && features != null) {
+////
+////        } else if (sortType != null && !searchFor.isEmpty() && features != null) {
+////
+////        }
+////        else {
+////            return "redirect:/";
+////        }
+//
+////        List<Post> posts = serviceImplementation.showAllPublishedBlogs(true);
+//        List<Tag> tags = new ArrayList<>();
+//        //List<String> author = new ArrayList<>();
+//        //String search = "search.....";
+//        List<String> tagList = new ArrayList<>();
+//        for(Post post: posts) {
+//            tags = post.getTags();
+//            User users = post.getAuthor();
+//            //author.add(users.getName());
+//            for(Tag tag: tags) {
+//                if(!tagList.contains(tag.getName())){
+//                    tagList.add(tag.getName());
+//                }
+//            }
+//        }
+//        List<String> author = new ArrayList<>();
+//        model.addAttribute("tags" , tagList);
+//        model.addAttribute("author", author);
+//
+//        model.addAttribute("selectedAuthors", selectedAuthors);
+//        model.addAttribute("selectedTags", selectedTags);
+//        model.addAttribute("searchFor", searchFor);
+//        model.addAttribute("posts", posts);
+//
+//        return "all-blogs";
+//    }
+
 
 //    @GetMapping("/sort/{sortType}")
 //    public String sort(@PathVariable String sortType, Model model) {
