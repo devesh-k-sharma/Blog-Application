@@ -7,6 +7,7 @@ import io.mountblue.BlogApplication.entity.Tag;
 import io.mountblue.BlogApplication.entity.User;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -31,12 +32,15 @@ public class BlogController {
     }
 
     @GetMapping("/")
-    public String showPage(Model model) {
+    public String showPage(@RequestParam(defaultValue = "0") int page,
+                           @RequestParam(defaultValue = "10") int size,
+                           Model model) {
 
-
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Post> posts = serviceImplementation.showAllPublishedBlogsPaged(true, pageable);
 
         //List<Post> posts = postList.getContent();
-         List<Post> posts = serviceImplementation.showAllPublishedBlogs(true);
+        // List<Post> posts = serviceImplementation.showAllPublishedBlogs(true);
         List<Tag> tags = new ArrayList<>();
         //List<String> author = new ArrayList<>();
         String search = "search.....";
@@ -115,11 +119,19 @@ public class BlogController {
                                   @RequestParam(value = "filter-tags", required = false) List<String> selectedTags,
                                   @RequestParam(value = "startDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
                                   @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
+                                  @RequestParam(defaultValue = "0") int page,
+                                  @RequestParam(defaultValue = "10") int size,
                                   Model model) {
         List<Post> posts = new ArrayList<>();
         LocalDateTime startDateTime = startDate != null ? LocalDateTime.of(startDate, LocalTime.MIN) : null;
         LocalDateTime endDateTime = endDate != null ? LocalDateTime.of(endDate, LocalTime.MAX) : null;
         posts = serviceImplementation.features(searchFor, sortType, selectedAuthors, selectedTags, startDateTime, endDateTime);
+
+        Pageable pageable = PageRequest.of(page, size);
+        int start = (int) pageable.getOffset();
+        int end = Math.min((start + pageable.getPageSize()), posts.size());
+        Page<Post> paginatedPosts = new PageImpl<>(posts.subList(start, end), pageable, posts.size());
+
 //        if(searchFor.equals(search)) {
 //            posts = serviceImplementation.features(searchFor, sortType, selectedAuthors, selectedTags);
 //        }
@@ -146,7 +158,7 @@ public class BlogController {
         model.addAttribute("endDate", endDate);
         model.addAttribute("tags" , tagList);
         model.addAttribute("author", author);
-        model.addAttribute("posts", posts);
+        model.addAttribute("posts", paginatedPosts);
         model.addAttribute("selectedAuthors", selectedAuthors);
         model.addAttribute("selectedTags", selectedTags);
         model.addAttribute("searchFor", searchFor);

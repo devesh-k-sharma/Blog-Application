@@ -220,19 +220,21 @@ button[type="submit"]:hover {
             <p>Author: <span th:text="${post.author}"></span></p>
             <p>Published Date: <span th:text="${post.published_at}"></span></p>
             <p th:text="${post.excerpt}"></p>
-            <a th:href="@{'/' + ${i}}(page=${i}, size=${posts.size})" th:text="${i + 1}">Page 1</a>
         </div>
-</div><!--
+</div>
+
+
+
 <div th:if="${posts.totalPages > 1}">
     <ul class="pagination">
         <li th:each="i : ${#numbers.sequence(0, posts.totalPages - 1)}"
             th:class="${posts.number == i} ? 'active' : ''">
-            <a th:href="@{'/' + ${i}} + '?page=' + ${i} + '&size=' + ${posts.size}" th:text="${i + 1}">Page 1</a>
+            <a th:href="@{'/?page=' + ${i} + '&size=' + ${posts.size}}" th:text="${i + 1}">Page ${i + 1}</a>
 
         </li>
     </ul>
 </div>
--->
+
 
 </body>
 </html>
