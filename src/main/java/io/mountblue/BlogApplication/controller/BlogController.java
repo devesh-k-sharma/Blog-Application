@@ -10,10 +10,15 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -38,21 +43,27 @@ public class BlogController {
 
         //List<Post> posts = postList.getContent();
         // List<Post> posts = serviceImplementation.showAllPublishedBlogs(true);
-        List<Tag> tags = new ArrayList<>();
-        //List<String> author = new ArrayList<>();
-        String search = "search.....";
+        List<String> author = new ArrayList<>();
         List<String> tagList = new ArrayList<>();
+
         for(Post post: posts) {
-            tags = post.getTags();
-            User users = post.getAuthor();
-            //author.add(users.getName());
-            for(Tag tag: tags) {
-                if(!tagList.contains(tag.getName())){
+            if (post != null) {
+                User user = post.getAuthor();
+                System.out.println(user);
+                if (user != null) {
+                    author.add(user.getName());
+                }
+                List<Tag> tags = post.getTags();
+                for (Tag tag : tags) {
                     tagList.add(tag.getName());
                 }
             }
         }
-        List<String> author = new ArrayList<>();
+        String search = "Search...";
+        Set<String> uniqueTags = new HashSet<>(tagList);
+        tagList.clear();
+        tagList.addAll(uniqueTags);
+//        List<String> author = new ArrayList<>();
 //        LocalDate oldestDate = serviceImplementation.oldestDate();
 //        LocalDate newestDate = serviceImplementation.newestDate();
         model.addAttribute("tags" , tagList);
@@ -64,51 +75,6 @@ public class BlogController {
         return "all-blogs";
     }
 
-//    @GetMapping("/")
-//    public String showPage(@RequestParam(defaultValue = "0") String pageStr,
-//                           @RequestParam(defaultValue = "10") String sizeStr,
-//                           Model model) {
-//        int page;
-//        int size;
-//        try {
-//            page = Integer.parseInt(pageStr);
-//            size = Integer.parseInt(sizeStr);
-//        } catch (NumberFormatException e) {
-//            page = 0;
-//            size = 10;
-//        }
-//        Pageable pageable = PageRequest.of(page, size);
-//        Page<Post> posts = serviceImplementation.showAllPublishedBlogsPaged(true, pageable);
-//
-//        //List<Post> posts = postList.getContent();
-//        // List<Post> posts = serviceImplementation.showAllPublishedBlogs(true);
-//        List<Tag> tags = new ArrayList<>();
-//        //List<String> author = new ArrayList<>();
-//        String search = "search.....";
-//        List<String> tagList = new ArrayList<>();
-//        for(Post post: posts) {
-//            tags = post.getTags();
-//            User users = post.getAuthor();
-//            //author.add(users.getName());
-//            for(Tag tag: tags) {
-//                if(!tagList.contains(tag.getName())){
-//                    tagList.add(tag.getName());
-//                }
-//            }
-//        }
-//        List<String> author = new ArrayList<>();
-////        LocalDate oldestDate = serviceImplementation.oldestDate();
-////        LocalDate newestDate = serviceImplementation.newestDate();
-//        model.addAttribute("tags" , tagList);
-//        model.addAttribute("author", author);
-//        model.addAttribute("searchbar", search);
-//        model.addAttribute("posts", posts);
-////        model.addAttribute("startDate", oldestDate);
-////        model.addAttribute("endDate", newestDate);
-//        return "all-blogs";
-//    }
-
-    static String search = "";
     @GetMapping("/features")
     public String showFeaturePage(@RequestParam(value = "sortType", required = false) String sortType,
                                   @RequestParam(value = "searchFor", required = false) String searchFor,
@@ -129,28 +95,19 @@ public class BlogController {
         int end = Math.min((start + pageable.getPageSize()), posts.size());
         Page<Post> paginatedPosts = new PageImpl<>(posts.subList(start, end), pageable, posts.size());
 
-//        if(searchFor.equals(search)) {
-//            posts = serviceImplementation.features(searchFor, sortType, selectedAuthors, selectedTags);
-//        }
-//        else {
-//            selectedAuthors = new ArrayList<>();
-//            selectedTags = new ArrayList<>();
-//            posts = serviceImplementation.features(searchFor, sortType, selectedAuthors, selectedTags);
-//            search = searchFor;
-//        }
+        List<String> author = new ArrayList<>();
         List<Tag> tags = new ArrayList<>();
         List<String> tagList = new ArrayList<>();
         for(Post post: posts) {
             tags = post.getTags();
             User users = post.getAuthor();
-            //author.add(users.getName());
+            author.add(users.getName());
             for(Tag tag: tags) {
                 if(!tagList.contains(tag.getName())){
                     tagList.add(tag.getName());
                 }
             }
         }
-        List<String> author = new ArrayList<>();
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
         model.addAttribute("tags" , tagList);
@@ -162,97 +119,6 @@ public class BlogController {
 
         return "all-blogs";
     }
-
-
-
-
-//    @GetMapping("/features")
-//    public String showFeaturesPage(@RequestParam(value = "sortType", required = false) String sortType,
-//                                   @RequestParam(value = "searchFor", required = false) String searchFor,
-//                                   @RequestParam(value = "filter-author", required = false) List<String> selectedAuthors,
-//                                   @RequestParam(value = "filter-tags", required = false) List<String> selectedTags,
-//                                   Model model) {
-//        List<Post> posts = new ArrayList<>();
-//        List<String> features = new ArrayList<>();
-//        features.addAll(selectedAuthors);
-//        features.addAll(selectedTags);
-//        System.out.println(features);
-////        if(sortType != null && searchFor.isEmpty() && features == null) {
-////            posts.addAll(serviceImplementation.showAllSortBy(sortType));
-////        } else if (sortType == null && searchFor != null && features == null) {
-////            posts.addAll(serviceImplementation.showAllSearchBy(searchFor));
-////            selectedAuthors.clear();
-////            selectedTags.clear();
-////        } else if (sortType != null && !searchFor.isEmpty() && features == null) {
-////            posts.addAll(serviceImplementation.multipleFeatures(searchFor, sortType, selectedAuthors, selectedTags));
-////        } else if (sortType == null && searchFor.isEmpty() && features != null) {
-////            posts.addAll(serviceImplementation.filterBy(selectedAuthors, selectedTags));
-////        }
-////        else if (sortType == null && !searchFor.isEmpty() && features != null) {
-////
-////        } else if (sortType != null && !searchFor.isEmpty() && features != null) {
-////
-////        }
-////        else {
-////            return "redirect:/";
-////        }
-//
-////        List<Post> posts = serviceImplementation.showAllPublishedBlogs(true);
-//        List<Tag> tags = new ArrayList<>();
-//        //List<String> author = new ArrayList<>();
-//        //String search = "search.....";
-//        List<String> tagList = new ArrayList<>();
-//        for(Post post: posts) {
-//            tags = post.getTags();
-//            User users = post.getAuthor();
-//            //author.add(users.getName());
-//            for(Tag tag: tags) {
-//                if(!tagList.contains(tag.getName())){
-//                    tagList.add(tag.getName());
-//                }
-//            }
-//        }
-//        List<String> author = new ArrayList<>();
-//        model.addAttribute("tags" , tagList);
-//        model.addAttribute("author", author);
-//
-//        model.addAttribute("selectedAuthors", selectedAuthors);
-//        model.addAttribute("selectedTags", selectedTags);
-//        model.addAttribute("searchFor", searchFor);
-//        model.addAttribute("posts", posts);
-//
-//        return "all-blogs";
-//    }
-
-
-//    @GetMapping("/sort/{sortType}")
-//    public String sort(@PathVariable String sortType, Model model) {
-//        List<Post> posts =serviceImplementation.showAllSortBy(sortType);
-//        model.addAttribute("posts", posts);
-//        return "all-blogs";
-//    }
-
-//    @GetMapping("/sort")
-//    public String sortBlogs(@RequestParam(value = "sortType") String sortType,
-//                            @RequestParam(value = "searchFor", required = false) String searchFor,
-//                            Model model) {
-//        List<Post> posts;
-//
-//        if (searchFor != null && !searchFor.isEmpty()) {
-//            posts = serviceImplementation.sortSearchResults(searchFor, sortType);
-//        } else {
-//            posts = serviceImplementation.showAllSortBy(sortType);
-//        }
-//        model.addAttribute("posts", posts);
-//        return "all-blogs";
-//    }
-//
-//    @GetMapping("/search")
-//    public String search(@RequestParam("searchFor") String searchFor, Model model) {
-//        List<Post> posts= serviceImplementation.showAllSearchBy(searchFor);
-//        model.addAttribute("posts", posts);
-//        return "all-blogs";
-//    }
 
     @GetMapping("/newpost")
     public String newPost(Model model) {
@@ -305,8 +171,14 @@ public class BlogController {
                 tags.add(savedTag);
             }
         }
-
         post.setTags(tags);
+
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        User author = serviceImplementation.findUserByUsername(username);
+        author.setRole("Author");
+        post.setAuthor(author);
+
         serviceImplementation.save(post);
 
         return "redirect:/";
@@ -353,8 +225,15 @@ public class BlogController {
     public String updateForm(@PathVariable Long postId, @ModelAttribute("post") Post post, @RequestParam("mytags") String tagsString) {
         Post posts = serviceImplementation.getPostById(postId);
         posts.setTitle(post.getTitle());
-        posts.setExcerpt(post.getExcerpt());
         posts.setContent(post.getContent());
+        if(posts.getPublished_at() == null) {
+            posts.setPublished_at(LocalDateTime.now());
+        }
+        String paragraph = post.getContent();
+        String[] words = paragraph.split("\\s+");
+        int maxLength = Math.min(words.length, 30);
+        String excerpt = String.join(" ", Arrays.copyOf(words, maxLength));
+        posts.setExcerpt(excerpt);
 
         String[] tagNames = tagsString.split(",");
         Map<String, Tag> existingTagsMap = new HashMap<>();
@@ -382,8 +261,12 @@ public class BlogController {
     }
 
     @GetMapping("/delete{postId}")
-    public String deleteById(@PathVariable Long postId, Model model) {
-        serviceImplementation.delete(postId);
+    public String deleteById(@PathVariable Long postId, Model model, Principal principal) {
+        String username = principal.getName();
+        Post post = serviceImplementation.getPostById(postId);
+        if(post.getAuthor().getUsername().equals(username)) {
+            serviceImplementation.delete(postId);
+        }
         return "redirect:/";
     }
 

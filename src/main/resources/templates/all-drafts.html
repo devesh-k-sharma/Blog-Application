@@ -106,7 +106,7 @@ a.create {
     <div th:each="post : ${posts}" style="width: 50%; box-sizing: border-box;">
         <div class="post-container">
             <h2 th:text="${post.title}"></h2>
-            <p>Author: <span th:text="${post.author}"></span></p>
+            <p>Author: <span th:text="${post.author.name}"></span></p>
             <p>Published Date: <span th:text="${post.published_at}"></span></p>
             <p th:text="${post.excerpt}"></p>
             <a th:href="@{'/post'+${post.id}}" class="read-more" style="text-decoration: none; color: inherit;">Read more...</a>

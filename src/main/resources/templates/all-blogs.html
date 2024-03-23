@@ -182,9 +182,9 @@ button[type="submit"]:hover {
         </div>
         <div class="filter-checkboxes">
             Authors
-            <div th:each="author : ${authors}">
-                <input type="checkbox" name="filter-author" th:value="${author}" th:checked="${selectedAuthors != null && selectedAuthors.contains(author)}" onchange="this.form.submit()">
-                <span th:text="${author}"></span>
+            <div th:each="post : ${posts}">
+                <input type="checkbox" name="filter-author" th:value="${post.author.name}" th:checked="${selectedAuthors != null && selectedAuthors.contains(author)}" onchange="this.form.submit()">
+                <span th:text="${post.author.name}"></span>
                 <br>
             </div>
             Tags
@@ -218,9 +218,11 @@ button[type="submit"]:hover {
     <div th:each="post : ${posts}" style="width: 50%; box-sizing: border-box;">
         <div class="post-container">
             <h2 th:text="${post.title}"></h2>
-            <p>Author: <span th:text="${post.author}"></span></p>
+            <p>Author: <span th:text="${post.author.name}"></span></p>
             <p>Published Date: <span th:text="${post.published_at}"></span></p>
             <p th:text="${post.excerpt}"></p>
+            <a th:href="@{'/post'+${post.id}}" class="read-more" style="text-decoration: none; color: inherit;">Read more...</a>
+
         </div>
 </div>
 

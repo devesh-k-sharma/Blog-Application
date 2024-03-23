@@ -119,13 +119,15 @@
 <body>
 <div class="container">
   <h1 class="title" th:text="${post.title}"></h1>
-  <p class="author">Author: <span th:text="${post.author}"></span></p>
+  <p class="author">Author: <span th:text="${post.author.name}"></span></p>
   <p class="published">Published Date: <span th:text="${post.published_at}"></span></p>
   <p class="tags">Tags: <span th:text="${mytags}"></span></p>
   <p class="content" th:text="${post.content}"></p>
+  <div th:if="${#authentication.name == post.author.username}">
+    <a th:href="@{'/update'+${post.id}}" class="read-more">Update</a>
+    <a th:href="@{'/delete'+${post.id}}" class="read-more">Delete</a>
+  </div>
 
-  <a th:href="@{'/update'+${post.id}}" class="read-more">Update</a>
-  <a th:href="@{'/delete'+${post.id}}" class="read-more">Delete</a>
 
   <br><br>
 

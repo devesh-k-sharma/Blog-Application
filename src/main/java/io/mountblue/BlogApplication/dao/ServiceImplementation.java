@@ -297,4 +297,8 @@ public class ServiceImplementation {
     public boolean usernameExist(String username) {
         return userRepository.existsByUsername(username);
     }
+
+    public User findUserByUsername(String username) {
+        return userRepository.findByUsername(username);
+    }
 }

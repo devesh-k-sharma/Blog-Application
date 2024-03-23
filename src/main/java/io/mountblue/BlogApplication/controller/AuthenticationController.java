@@ -50,6 +50,11 @@ public class AuthenticationController {
         return "redirect:/login?signupSuccess";
     }
 
+    @PostMapping("/logout")
+    public String logout() {
+        return "redirect:/";
+    }
+
     @GetMapping("/access-denied")
     public String showAccessDenied() {
         return "access-denied";
