@@ -286,5 +286,15 @@ public class ServiceImplementation {
         return new ArrayList<>(set);
     }
 
+    public boolean userExists(String email) {
+        return userRepository.existsByEmail(email);
+    }
 
+    public void saveUser(User user) {
+        userRepository.save(user);
+    }
+
+    public boolean usernameExist(String username) {
+        return userRepository.existsByUsername(username);
+    }
 }
