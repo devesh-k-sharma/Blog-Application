@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.w3.org/1999/xhtml" xmlns="http://www.w3.org/1999/html">
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -147,11 +147,6 @@ button[type="submit"]:hover {
     background-color: black;
 }
 
-
-
-
-
-
     </style>
 </head>
 <body>
@@ -159,7 +154,16 @@ button[type="submit"]:hover {
 <div class="header">
     <h1>My Blog Application</h1>
     <div class="button-container">
-        <a th:href="@{/login}" class="button">Login</a>
+        <div sec:authorize="isAuthenticated()">
+            <form action="#" th:action="@{/logout}" method="post">
+                <input type="submit" class="button" value="Logout">
+            </form>
+        </div>
+        <!-- If not authenticated, display login button -->
+        <div sec:authorize="!isAuthenticated()">
+            <a th:href="@{/login}" class="button">Login</a>
+        </div>
+
         <a th:href="@{/drafts}" class="button">Drafts</a>
         <a th:href="@{/newpost}" class="button">Create</a>
     </div>
@@ -182,9 +186,9 @@ button[type="submit"]:hover {
         </div>
         <div class="filter-checkboxes">
             Authors
-            <div th:each="post : ${posts}">
-                <input type="checkbox" name="filter-author" th:value="${post.author.name}" th:checked="${selectedAuthors != null && selectedAuthors.contains(author)}" onchange="this.form.submit()">
-                <span th:text="${post.author.name}"></span>
+            <div th:each="author : ${author}">
+                <input type="checkbox" name="filter-author" th:value="${author}" th:checked="${selectedAuthors != null && selectedAuthors.contains(author)}" onchange="this.form.submit()">
+                <span th:text="${author}"></span>
                 <br>
             </div>
             Tags
@@ -198,10 +202,10 @@ button[type="submit"]:hover {
         Published Date:
         <div>
             <label for="startDate">Start Date:</label>
-            <input type="date" id="startDate" name="startDate">
+            <input type="date" id="startDate" name="startDate" th:value="${startDate}">
 
             <label for="endDate">End Date:</label>
-            <input type="date" id="endDate" name="endDate">
+            <input type="date" id="endDate" name="endDate" th:value="${endDate}">
 
 
             <button type="submit">Search</button>

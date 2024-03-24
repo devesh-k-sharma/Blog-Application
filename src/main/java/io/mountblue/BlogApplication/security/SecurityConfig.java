@@ -29,11 +29,6 @@ public class SecurityConfig {
         return theUserDetailManager;
     }
 
-//    @Bean
-//    public UserDetailsService userDetailsService(DataSource dataSource) {
-//        return new UserInfoUserDetailService();
-//    }
-
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -44,7 +39,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(configurer ->
                         configurer
                                 .requestMatchers("/", "/features", "/post{postId}").permitAll()
-                                .requestMatchers("/newpost", "/update**", "/delete**").authenticated()
+                                .requestMatchers("/newpost", "/drafts", "/update**", "/delete**").authenticated()
                                 //.requestMatchers("/update**").hasAuthority("ROLE_AUTHOR")
                                 .anyRequest().permitAll()
                 )
@@ -53,7 +48,10 @@ public class SecurityConfig {
                                 .loginPage("/login")
                                 .permitAll()
                 )
-                .logout(logout -> logout.permitAll()
+                .logout(logout -> logout
+                        .logoutUrl("/logout")
+                        .logoutSuccessUrl("/")
+                        .permitAll()
                 )
                 .exceptionHandling(configurer ->
                         configurer.accessDeniedPage("/access-denied")

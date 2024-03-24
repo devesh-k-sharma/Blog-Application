@@ -5,6 +5,7 @@ import io.mountblue.BlogApplication.entity.Comment;
 import io.mountblue.BlogApplication.entity.Post;
 import io.mountblue.BlogApplication.entity.Tag;
 import io.mountblue.BlogApplication.entity.User;
+import jakarta.servlet.http.HttpSession;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -14,10 +15,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
-
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -49,7 +50,6 @@ public class BlogController {
         for(Post post: posts) {
             if (post != null) {
                 User user = post.getAuthor();
-                System.out.println(user);
                 if (user != null) {
                     author.add(user.getName());
                 }
@@ -63,15 +63,19 @@ public class BlogController {
         Set<String> uniqueTags = new HashSet<>(tagList);
         tagList.clear();
         tagList.addAll(uniqueTags);
-//        List<String> author = new ArrayList<>();
-//        LocalDate oldestDate = serviceImplementation.oldestDate();
-//        LocalDate newestDate = serviceImplementation.newestDate();
+        Set<String> uniqueAuthors = new HashSet<>(author);
+        author.clear();
+        author.addAll(uniqueAuthors);
+        Collections.sort(tagList);
+        Collections.sort(author);
+        LocalDate oldestDate = serviceImplementation.oldestPublishedDate();
+        LocalDate newestDate = serviceImplementation.newestPublishedDate();
         model.addAttribute("tags" , tagList);
         model.addAttribute("author", author);
         model.addAttribute("searchbar", search);
         model.addAttribute("posts", posts);
-//        model.addAttribute("startDate", oldestDate);
-//        model.addAttribute("endDate", newestDate);
+        model.addAttribute("startDate", oldestDate);
+        model.addAttribute("endDate", newestDate);
         return "all-blogs";
     }
 
@@ -84,11 +88,22 @@ public class BlogController {
                                   @RequestParam(value = "endDate", required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate,
                                   @RequestParam(defaultValue = "0") int page,
                                   @RequestParam(defaultValue = "10") int size,
-                                  Model model) {
+                                  Model model, HttpSession session) {
+
+        String previousSearchFor = (String) session.getAttribute("previousSearchFor");
+
+        boolean isNewSearch = !Objects.equals(searchFor, previousSearchFor);
+        session.setAttribute("previousSearchFor", searchFor);
+
         List<Post> posts = new ArrayList<>();
         LocalDateTime startDateTime = startDate != null ? LocalDateTime.of(startDate, LocalTime.MIN) : null;
         LocalDateTime endDateTime = endDate != null ? LocalDateTime.of(endDate, LocalTime.MAX) : null;
-        posts = serviceImplementation.features(searchFor, sortType, selectedAuthors, selectedTags, startDateTime, endDateTime);
+
+        if (isNewSearch) {
+            posts.addAll(serviceImplementation.showAllSearchBy(searchFor));
+        } else {
+            posts.addAll(serviceImplementation.features(searchFor, sortType, selectedAuthors, selectedTags, startDateTime, endDateTime));
+        }
 
         Pageable pageable = PageRequest.of(page, size);
         int start = (int) pageable.getOffset();
@@ -108,6 +123,13 @@ public class BlogController {
                 }
             }
         }
+        Set<String> uniqueTags = new HashSet<>(tagList);
+        tagList.clear();
+        tagList.addAll(uniqueTags);
+        Set<String> uniqueAuthors = new HashSet<>(author);
+        author.clear();
+        author.addAll(uniqueAuthors);
+        Collections.sort(tagList);
         model.addAttribute("startDate", startDate);
         model.addAttribute("endDate", endDate);
         model.addAttribute("tags" , tagList);
@@ -128,9 +150,14 @@ public class BlogController {
 
     @GetMapping("/drafts")
     public String showDraftPage(Model model) {
-        List<Post> posts = serviceImplementation.showAllPublishedBlogs(false);
-        model.addAttribute("posts", posts);
-        return "all-drafts";
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
+            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
+            List<Post> posts = serviceImplementation.findPostByUsernameAndIsPublished(userDetails.getUsername(),false);
+            model.addAttribute("posts", posts);
+            return "all-drafts";
+        }
+        return "redirect:/";
     }
 
     @PostMapping("/action")
@@ -188,12 +215,11 @@ public class BlogController {
     public String viewBlogPost(@PathVariable Long postId, Model model) {
         Post post = serviceImplementation.getPostById(postId);
         List<Comment> comments = post.getComments();
-        System.out.println("Number of comments for post " + postId + ": " + comments.size());
         String theComment = null;
         List<Tag> tags = post.getTags();
         StringBuilder tagListBuilder = new StringBuilder();
         for (Tag tag : tags) {
-            tagListBuilder.append(tag.getName()).append(" "); // Add a comma after each tag name
+            tagListBuilder.append(tag.getName()).append(" ");
         }
         String tagList = tagListBuilder.toString();
         model.addAttribute("mytags", tagList);
@@ -211,7 +237,7 @@ public class BlogController {
             List<Tag> tags = post.getTags();
             StringBuilder tagListBuilder = new StringBuilder();
             for (Tag tag : tags) {
-                tagListBuilder.append(tag.getName()).append(","); // Add a comma after each tag name
+                tagListBuilder.append(tag.getName()).append(",");
             }
             String tagList = tagListBuilder.toString();
             model.addAttribute("mytags", tagList);
@@ -273,9 +299,19 @@ public class BlogController {
     @PostMapping("/addcomment{postId}")
     public String addComment(@PathVariable Long postId,@RequestParam("newComment") String newCommentText) {
         Post post = serviceImplementation.getPostById(postId);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         Comment newComment = new Comment();
         newComment.setComment(newCommentText);
         newComment.setPost(post);
+        if(authentication!= null && !authentication.getName().equals("anonymousUser")) {
+            System.out.println(authentication.getName());
+            User user = serviceImplementation.findUserByUsername(authentication.getName());
+            newComment.setName(user.getName());
+            newComment.setEmail(user.getEmail());
+        }
+        else{
+            newComment.setName("Anonymous");
+        }
         post.getComments().add(newComment);
         serviceImplementation.save(post);
         return "redirect:/post" + postId;

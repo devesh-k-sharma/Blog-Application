@@ -38,24 +38,6 @@ public class ServiceImplementation {
         return postDBData;
     }
 
-    public LocalDate oldestDate() {
-        List<Post> posts = postRepository.findByIsPublishedOrderByPublishedAtAsc(true);
-        if (!posts.isEmpty()) {
-            return posts.getFirst().getPublishedAt().toLocalDate();
-        } else {
-            return null;
-        }
-    }
-
-    public LocalDate newestDate() {
-        List<Post> posts = postRepository.findByIsPublishedOrderByPublishedAtDesc(true);
-        if (!posts.isEmpty()) {
-            return posts.getFirst().getPublishedAt().toLocalDate();
-        } else {
-            return null;
-        }
-    }
-
     public void save(Post post) {
         postRepository.save(post);
     }
@@ -79,37 +61,17 @@ public class ServiceImplementation {
         return postRepository.findPostByIsPublished(isPublished);
     }
 
-//    public List<Post> showAllSortBy(String sortType) {
-//        if(sortType.equals("newest")){
-//            return postRepository.findPostByIsPublishedOrderByPublishedAtDesc(true);
-//        }
-//        else if (sortType.equals("oldest")) {
-//            return postRepository.findPostByIsPublishedOrderByPublishedAtAsc(true);
-//        }
-//        else if (sortType.equals("longest")) {
-//            return postRepository.findPublishedPostsOrderByContentLengthDesc();
-//        }
-//        else if (sortType.equals("shortest")) {
-//            return postRepository.findPublishedPostsOrderByContentLengthAsc();
-//        }
-//        else {
-//            return new ArrayList<>();
-//        }
-//    }
-//
     public List<Post> showAllSearchBy(String searchFor) {
         Set<Post> posts = new HashSet<>();
 
         List<Post> postsByTitle = postRepository.findByTitleAndIsPublished(searchFor, true);
         if (!postsByTitle.isEmpty()) {
-            //return postsByTitle;
             posts.addAll(postsByTitle);
         }
 
         User user = userRepository.findByName(searchFor);
         if (user != null) {
             posts.addAll(user.getPosts());
-            //return posts;
         }
 
         Tag tag = tagRepository.findFirstByName(searchFor);
@@ -118,15 +80,14 @@ public class ServiceImplementation {
             for (PostTag postTag : postTags) {
                 posts.add(postTag.getPost());
             }
-            //return posts;
         }
 
         List<Post> postByContent = postRepository.findByContentContaining(searchFor);
         if(!postByContent.isEmpty()) {
-            //return postByContent;
             posts.addAll(postByContent);
         }
-        List<Post> resultPosts = new ArrayList<>(posts);
+
+        List<Post> resultPosts = new ArrayList<>(postRepository.findPostsByIsPublished(posts));
         return resultPosts;
     }
 
@@ -159,59 +120,19 @@ public class ServiceImplementation {
 
 
     public List<Post> showAllSortBy(String sortType, List<Post> posts) {
-
         List<Post> resultPosts = new ArrayList<>();
-            if(sortType.equals("newest")){
-                resultPosts.addAll(postRepository.findPostByIsPublishedOrderByPublishedAtDesc(true, posts));
-                return resultPosts;
-            }
-            else if (sortType.equals("oldest")) {
-                resultPosts.addAll(postRepository.findPostByIsPublishedOrderByPublishedAtAsc(true, posts));
-                return resultPosts;
-            }
-            else if (sortType.equals("longest")) {
-                resultPosts.addAll(postRepository.findPublishedPostsOrderByContentLengthDesc(posts));
-                return resultPosts;
-            }
-            else if (sortType.equals("shortest")) {
-                resultPosts.addAll(postRepository.findPublishedPostsOrderByContentLengthAsc(posts));
-                return resultPosts;
-            }
-            else {
-                return resultPosts;
-            }
+        if (sortType.equals("newest")) {
+            resultPosts.addAll(postRepository.findPostByPublishedAtDesc(posts));
+        } else if (sortType.equals("oldest")) {
+            resultPosts.addAll(postRepository.findPostByPublishedAtAsc(posts));
+        } else if (sortType.equals("longest")) {
+            resultPosts.addAll(postRepository.findPublishedPostsOrderByContentLengthDesc(posts));
+        } else if (sortType.equals("shortest")) {
+            resultPosts.addAll(postRepository.findPublishedPostsOrderByContentLengthAsc(posts));
+        }
+        // No need for an else block here
+        return resultPosts;
     }
-
-//    public List<Post> multipleFeatures(String searchFor, String sortType, List<String> selectedAuthors, List<String> selectedTags) {
-//        List<Post> posts = new ArrayList<>();
-//        if(!searchFor.isEmpty()) {
-//            posts = showAllSearchBy(searchFor);
-//        }
-//        List<Post> resultPosts = new ArrayList<>();
-//        if(sortType != null) {
-//            if(sortType.equals("newest")){
-//                resultPosts.addAll(postRepository.findPostByIsPublishedOrderByPublishedAtDesc(true, posts));
-//                return resultPosts;
-//            }
-//            else if (sortType.equals("oldest")) {
-//                resultPosts.addAll(postRepository.findPostByIsPublishedOrderByPublishedAtAsc(true, posts));
-//                return resultPosts;
-//            }
-//            else if (sortType.equals("longest")) {
-//                resultPosts.addAll(postRepository.findPublishedPostsOrderByContentLengthDesc(posts));
-//                return resultPosts;
-//            }
-//            else if (sortType.equals("shortest")) {
-//                resultPosts.addAll(postRepository.findPublishedPostsOrderByContentLengthAsc(posts));
-//                return resultPosts;
-//            }
-//            else {
-//                return resultPosts;
-//            }
-//
-//        }
-//        return posts;
-//    }
 
     public Post getPostById(Long id) {
         Optional<Post> postOptional = postRepository.findById(id);
@@ -258,24 +179,16 @@ public class ServiceImplementation {
         return comments;
     }
 
-    static String search = "";
-
     public List<Post> features(String searchFor, String sortBy, List<String> selectedAuthors, List<String> selectedTags, LocalDateTime startDateTime, LocalDateTime endDateTime) {
         List<Post> posts = new ArrayList<>();
-        if (searchFor != null && !searchFor.isEmpty() && !searchFor.equals(search)) {
+        if (searchFor != null && !searchFor.isEmpty()) {
             posts.addAll(showAllSearchBy(searchFor));
-            search = searchFor;
-            return posts;
         } else {
-            posts.addAll(postRepository.findAll());
+            posts.addAll(showAllPublishedBlogs(true));
         }
 
         if (selectedAuthors != null || selectedTags != null) {
             posts = filterBy(selectedAuthors, selectedTags, posts);
-        }
-
-        if (sortBy != null) {
-            posts = showAllSortBy(sortBy, posts);
         }
 
         if (startDateTime != null && endDateTime != null) {
@@ -283,7 +196,19 @@ public class ServiceImplementation {
         }
 
         Set<Post> set = new HashSet<>(posts);
-        return new ArrayList<>(set);
+        posts.clear();
+        posts.addAll(set);
+        if (sortBy != null && !sortBy.isEmpty()) {
+            posts = showAllSortBy(sortBy, posts);
+        }
+        return posts;
+    }
+
+    public LocalDate oldestPublishedDate() {
+        return postRepository.findOldestPublishedDate();
+    }
+    public LocalDate newestPublishedDate() {
+        return postRepository.findNewestPublishedDate();
     }
 
     public boolean userExists(String email) {
@@ -300,5 +225,10 @@ public class ServiceImplementation {
 
     public User findUserByUsername(String username) {
         return userRepository.findByUsername(username);
+    }
+
+    public List<Post> findPostByUsernameAndIsPublished(String username, boolean isPublished) {
+        User user = findUserByUsername(username);
+        return postRepository.findPostByAuthorAndIsPublished(user,isPublished);
     }
 }

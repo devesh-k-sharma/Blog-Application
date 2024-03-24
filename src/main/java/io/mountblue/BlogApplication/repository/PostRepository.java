@@ -11,9 +11,11 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 
 public interface PostRepository extends JpaRepository<Post, Long> {
 
@@ -23,12 +25,6 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     void updateIsPublishedById(Long postId, boolean isPublished);
     Post findPostByTitleAndContent(String title, String content);
 
-//    @Query("SELECT p FROM Post p ORDER BY p.publishedAt ASC")
-//    Post findOldestPost();
-//
-//    @Query("SELECT p FROM Post p ORDER BY p.publishedAt DESC")
-//    Post findNewestPost();
-
     List<Post> findByIsPublishedOrderByPublishedAtAsc(boolean isPublished);
     List<Post> findByIsPublishedOrderByPublishedAtDesc(boolean isPublished);
 
@@ -37,32 +33,25 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     Page<Post> findByIsPublished(boolean isPublished, Pageable pageable);
     List<Post> findByAuthor(User user);
 
-    List<Post> findPostByIsPublishedOrderByPublishedAtDesc(boolean isPublished);
-
-    List<Post> findPostByIsPublishedOrderByPublishedAtAsc(boolean isPublished);
-
-    @Query("SELECT p FROM Post p WHERE p.isPublished = true ORDER BY LENGTH(p.content) ASC")
-    List<Post> findPublishedPostsOrderByContentLengthAsc();
-
-    @Query("SELECT p FROM Post p WHERE p.isPublished = true ORDER BY LENGTH(p.content) DESC")
-    List<Post> findPublishedPostsOrderByContentLengthDesc();
-
     List<Post> findByTitleAndIsPublished(String title, boolean isPublished);
+
+    @Query("SELECT p FROM Post p WHERE p.isPublished = true AND p IN :posts")
+    Set<Post> findPostsByIsPublished(Set<Post> posts);
 
     @Query("SELECT p FROM Post p WHERE p.content LIKE %:content% AND p.isPublished = true")
     List<Post> findByContentContaining(@Param("content") String content);
 
 
-    @Query("SELECT p FROM Post p WHERE p.isPublished = ?1 AND p IN ?2 ORDER BY p.publishedAt DESC")
-    List<Post> findPostByIsPublishedOrderByPublishedAtDesc(boolean isPublished, List<Post> posts);
+    @Query("SELECT p FROM Post p WHERE p IN :posts ORDER BY p.publishedAt DESC")
+    List<Post> findPostByPublishedAtDesc(List<Post> posts);
 
-    @Query("SELECT p FROM Post p WHERE p.isPublished = ?1 AND p IN ?2 ORDER BY p.publishedAt ASC")
-    List<Post> findPostByIsPublishedOrderByPublishedAtAsc(boolean isPublished, List<Post> posts);
+    @Query("SELECT p FROM Post p WHERE p IN :posts ORDER BY p.publishedAt ASC")
+    List<Post> findPostByPublishedAtAsc(List<Post> posts);
 
-    @Query("SELECT p FROM Post p WHERE p.isPublished = true AND p IN :posts ORDER BY LENGTH(p.content) ASC")
+    @Query("SELECT p FROM Post p WHERE p IN :posts ORDER BY LENGTH(TRIM(p.content)) ASC")
     List<Post> findPublishedPostsOrderByContentLengthAsc(List<Post> posts);
 
-    @Query("SELECT p FROM Post p WHERE p.isPublished = true AND p IN :posts ORDER BY LENGTH(p.content) DESC")
+    @Query("SELECT p FROM Post p WHERE p IN :posts ORDER BY LENGTH(TRIM(p.content)) DESC")
     List<Post> findPublishedPostsOrderByContentLengthDesc(List<Post> posts);
 
     @Query("SELECT p FROM Post p JOIN p.tags t WHERE t = ?1 AND p IN ?2 ORDER BY p.publishedAt DESC")
@@ -70,4 +59,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
 
     @Query("SELECT p FROM Post p WHERE p IN :posts AND p.publishedAt BETWEEN :startDateTime AND :endDateTime")
     List<Post> findPostsInListAndBetweenDateTime(@Param("startDateTime") LocalDateTime startDateTime, @Param("endDateTime") LocalDateTime endDateTime, @Param("posts") List<Post> posts);
+
+    List<Post> findPostByAuthorAndIsPublished(User user, boolean isPublished);
+
+    @Query("SELECT MIN(publishedAt) FROM Post p WHERE p.isPublished = true")
+    LocalDate findOldestPublishedDate();
+
+    @Query("SELECT MAX(publishedAt) FROM Post p WHERE p.isPublished = true")
+    LocalDate findNewestPublishedDate();
 }
