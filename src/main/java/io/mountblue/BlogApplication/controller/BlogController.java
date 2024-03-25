@@ -1,6 +1,7 @@
 package io.mountblue.BlogApplication.controller;
 
-import io.mountblue.BlogApplication.dao.ServiceImplementation;
+import io.mountblue.BlogApplication.dao.BlogService;
+import io.mountblue.BlogApplication.dao.BlogServiceImplementation;
 import io.mountblue.BlogApplication.entity.Comment;
 import io.mountblue.BlogApplication.entity.Post;
 import io.mountblue.BlogApplication.entity.Tag;
@@ -11,8 +12,6 @@ import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -28,9 +27,9 @@ import java.util.*;
 @Controller
 public class BlogController {
 
-    private ServiceImplementation serviceImplementation;
+    private BlogService serviceImplementation;
 
-    public BlogController(ServiceImplementation serviceImplementation){
+    public BlogController(BlogService serviceImplementation){
         this.serviceImplementation = serviceImplementation;
     }
 
@@ -41,9 +40,6 @@ public class BlogController {
 
         Pageable pageable = PageRequest.of(page, size);
         Page<Post> posts = serviceImplementation.showAllPublishedBlogsPaged(true, pageable);
-
-        //List<Post> posts = postList.getContent();
-        // List<Post> posts = serviceImplementation.showAllPublishedBlogs(true);
         List<String> author = new ArrayList<>();
         List<String> tagList = new ArrayList<>();
 

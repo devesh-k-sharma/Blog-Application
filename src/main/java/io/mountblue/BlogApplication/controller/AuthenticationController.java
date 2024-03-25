@@ -1,6 +1,6 @@
 package io.mountblue.BlogApplication.controller;
 
-import io.mountblue.BlogApplication.dao.ServiceImplementation;
+import io.mountblue.BlogApplication.dao.BlogServiceImplementation;
 import io.mountblue.BlogApplication.entity.User;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
@@ -12,10 +12,10 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 @Controller
 public class AuthenticationController {
 
-    private ServiceImplementation serviceImplementation;
+    private BlogServiceImplementation serviceImplementation;
     private PasswordEncoder passwordEncoder;
 
-    public AuthenticationController(ServiceImplementation serviceImplementation, PasswordEncoder passwordEncoder) {
+    public AuthenticationController(BlogServiceImplementation serviceImplementation, PasswordEncoder passwordEncoder) {
         this.serviceImplementation = serviceImplementation;
         this.passwordEncoder = passwordEncoder;
     }

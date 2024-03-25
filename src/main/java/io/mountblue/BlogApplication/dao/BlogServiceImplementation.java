@@ -14,18 +14,16 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
-public class ServiceImplementation {
+public class BlogServiceImplementation implements BlogService {
 
-    public ServiceImplementation() {}
-
-    private UserRepository userRepository;
-    private PostRepository postRepository;
-    private TagRepository tagRepository;
-    private PostTagRepository postTagRepository;
-    private CommentRepository commentRepository;
+    private final UserRepository userRepository;
+    private final PostRepository postRepository;
+    private final TagRepository tagRepository;
+    private final PostTagRepository postTagRepository;
+    private final CommentRepository commentRepository;
 
     @Autowired
-    public ServiceImplementation(UserRepository userRepository, PostRepository postRepository, TagRepository tagRepository, PostTagRepository postTagRepository, CommentRepository commentRepository) {
+    public BlogServiceImplementation(UserRepository userRepository, PostRepository postRepository, TagRepository tagRepository, PostTagRepository postTagRepository, CommentRepository commentRepository) {
         this.userRepository = userRepository;
         this.postRepository = postRepository;
         this.tagRepository = tagRepository;
@@ -33,34 +31,42 @@ public class ServiceImplementation {
         this.commentRepository = commentRepository;
     }
 
+    @Override
     public List<Post> showPage() {
-        List<Post> postDBData = postRepository.findAll();
-        return postDBData;
+        return postRepository.findAll();
     }
 
+    @Override
     public void save(Post post) {
         postRepository.save(post);
     }
 
+    @Override
     public List<Post> showAllPosts() {
-        List<Post> allPosts=postRepository.findAll();
-        return allPosts;
+        return postRepository.findAll();
     }
+
+    @Override
     public void publish(Long id, boolean isPublished) {
         postRepository.updateIsPublishedById(id, isPublished);
     }
 
+    @Override
     public Post findPostByTitleAndContent(String title, String content) {
         return postRepository.findPostByTitleAndContent(title, content);
     }
 
+    @Override
     public Page<Post> showAllPublishedBlogsPaged(boolean isPublished, Pageable pageable) {
         return postRepository.findByIsPublished(isPublished, pageable);
     }
+
+    @Override
     public List<Post> showAllPublishedBlogs(boolean isPublished) {
         return postRepository.findPostByIsPublished(isPublished);
     }
 
+    @Override
     public List<Post> showAllSearchBy(String searchFor) {
         Set<Post> posts = new HashSet<>();
 
@@ -83,34 +89,33 @@ public class ServiceImplementation {
         }
 
         List<Post> postByContent = postRepository.findByContentContaining(searchFor);
-        if(!postByContent.isEmpty()) {
+        if (!postByContent.isEmpty()) {
             posts.addAll(postByContent);
         }
 
-        List<Post> resultPosts = new ArrayList<>(postRepository.findPostsByIsPublished(posts));
-        return resultPosts;
+        return new ArrayList<>(postRepository.findPostsByIsPublished(posts));
     }
 
+    @Override
     public List<Post> filterBy(List<String> selectedAuthors, List<String> selectedTags, List<Post> posts) {
         List<Post> resultPosts = new ArrayList<>();
-        if(selectedAuthors != null && selectedTags == null) {
-            for(String authors : selectedAuthors) {
+        if (selectedAuthors != null && selectedTags == null) {
+            for (String authors : selectedAuthors) {
                 User user = userRepository.findByName(authors);
                 resultPosts.addAll(postRepository.findByAuthor(user));
             }
-        }
-        else if (selectedTags != null && selectedAuthors == null) {
-            for(String tags: selectedTags) {
+        } else if (selectedTags != null && selectedAuthors == null) {
+            for (String tags : selectedTags) {
                 Tag tag = tagRepository.findFirstByName(tags);
                 resultPosts.addAll(postRepository.findByTagInPosts(tag, posts));
             }
         } else if (selectedTags != null && selectedAuthors != null) {
             User user = new User();
             Tag tag = new Tag();
-            for(String authors : selectedAuthors) {
+            for (String authors : selectedAuthors) {
                 user = userRepository.findByName(authors);
             }
-            for(String tags: selectedTags) {
+            for (String tags : selectedTags) {
                 tag = tagRepository.findFirstByName(tags);
             }
             resultPosts.addAll(postRepository.findPostByAuthorOrTags(user, tag));
@@ -119,6 +124,7 @@ public class ServiceImplementation {
     }
 
 
+    @Override
     public List<Post> showAllSortBy(String sortType, List<Post> posts) {
         List<Post> resultPosts = new ArrayList<>();
         if (sortType.equals("newest")) {
@@ -130,41 +136,43 @@ public class ServiceImplementation {
         } else if (sortType.equals("shortest")) {
             resultPosts.addAll(postRepository.findPublishedPostsOrderByContentLengthAsc(posts));
         }
-        // No need for an else block here
         return resultPosts;
     }
 
+    @Override
     public Post getPostById(Long id) {
         Optional<Post> postOptional = postRepository.findById(id);
         return postOptional.orElse(null);
     }
 
+    @Override
     public void delete(Long id) {
         postRepository.deleteById(id);
     }
 
+    @Override
     public List<Tag> getAllTags() {
-        List<Tag> tags = tagRepository.findAll();
-        return tags;
+        return tagRepository.findAll();
     }
 
+    @Override
     public Tag saveTag(Tag tag) {
-        Tag tags = tagRepository.save(tag);
-        return tags;
+        return tagRepository.save(tag);
     }
 
+    @Override
     public void deleteComment(Long commentId, Long postId) {
         Optional<Comment> optionalComment = commentRepository.findById(commentId);
-        if (optionalComment.isPresent()) {
-            Comment comment = optionalComment.get();
+        optionalComment.ifPresent(comment -> {
             if (comment.getPost().getId().equals(postId)) {
                 commentRepository.delete(comment);
             } else {
                 throw new IllegalArgumentException("No such comment");
             }
-        }
+        });
     }
 
+    @Override
     public Comment getComment(Long postId, Long commentId) {
         Optional<Comment> optionalComment = commentRepository.findById(commentId);
         Comment comments = null;
@@ -179,6 +187,7 @@ public class ServiceImplementation {
         return comments;
     }
 
+    @Override
     public List<Post> features(String searchFor, String sortBy, List<String> selectedAuthors, List<String> selectedTags, LocalDateTime startDateTime, LocalDateTime endDateTime) {
         List<Post> posts = new ArrayList<>();
         if (searchFor != null && !searchFor.isEmpty()) {
@@ -204,31 +213,39 @@ public class ServiceImplementation {
         return posts;
     }
 
+    @Override
     public LocalDate oldestPublishedDate() {
         return postRepository.findOldestPublishedDate();
     }
+
+    @Override
     public LocalDate newestPublishedDate() {
         return postRepository.findNewestPublishedDate();
     }
 
+    @Override
     public boolean userExists(String email) {
-        return userRepository.existsByEmail(email);
+        return false;
     }
 
+    @Override
     public void saveUser(User user) {
-        userRepository.save(user);
+
     }
 
+    @Override
     public boolean usernameExist(String username) {
-        return userRepository.existsByUsername(username);
+        return false;
     }
 
+    @Override
     public User findUserByUsername(String username) {
-        return userRepository.findByUsername(username);
+        return null;
     }
 
+    @Override
     public List<Post> findPostByUsernameAndIsPublished(String username, boolean isPublished) {
-        User user = findUserByUsername(username);
-        return postRepository.findPostByAuthorAndIsPublished(user,isPublished);
+        return null;
     }
+
 }

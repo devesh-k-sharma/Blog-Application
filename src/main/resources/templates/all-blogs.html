@@ -147,6 +147,38 @@ button[type="submit"]:hover {
     background-color: black;
 }
 
+        .pagination {
+    display: flex;
+    list-style: none;
+    padding-left: 0;
+}
+
+.pagination li {
+    margin-right: 5px;
+}
+
+.pagination li:last-child {
+    margin-right: 0;
+}
+
+.pagination li a {
+    color: #333;
+    text-decoration: none;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+}
+
+.pagination li.active a {
+    background-color: #007bff;
+    color: #fff;
+}
+
+.pagination li.disabled a {
+    pointer-events: none;
+    opacity: 0.5;
+}
+
+
     </style>
 </head>
 <body>
@@ -230,17 +262,34 @@ button[type="submit"]:hover {
         </div>
 </div>
 
+    <div th:if="${posts.totalPages > 1}">
+        <ul class="pagination">
+            <!-- Previous Button -->
+            <li th:class="${posts.first} ? 'disabled' : ''">
+                <a th:if="${!posts.first}"
+                   th:href="@{'/?page=' + ${posts.number - 1} + '&size=' + ${posts.size}}"
+                   aria-label="Previous">
+                    <span aria-hidden="true">&laquo;</span>
+                </a>
+            </li>
 
+            <!-- Numbered Pages -->
+            <li th:each="i : ${#numbers.sequence(0, posts.totalPages - 1)}"
+                th:class="${posts.number == i} ? 'active' : ''">
+                <a th:href="@{'/?page=' + ${i} + '&size=' + ${posts.size}}" th:text="${i + 1}">Page ${i + 1}</a>
+            </li>
 
-<div th:if="${posts.totalPages > 1}">
-    <ul class="pagination">
-        <li th:each="i : ${#numbers.sequence(0, posts.totalPages - 1)}"
-            th:class="${posts.number == i} ? 'active' : ''">
-            <a th:href="@{'/?page=' + ${i} + '&size=' + ${posts.size}}" th:text="${i + 1}">Page ${i + 1}</a>
+            <!-- Next Button -->
+            <li th:class="${posts.last} ? 'disabled' : ''">
+                <a th:if="${!posts.last}"
+                   th:href="@{'/?page=' + ${posts.number + 1} + '&size=' + ${posts.size}}"
+                   aria-label="Next">
+                    <span aria-hidden="true">&raquo;</span>
+                </a>
+            </li>
+        </ul>
+    </div>
 
-        </li>
-    </ul>
-</div>
 
 </div>
 </body>
