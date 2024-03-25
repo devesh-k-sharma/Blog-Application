@@ -63,4 +63,5 @@ public interface BlogService {
     List<Post> findPostByUsernameAndIsPublished(String username, boolean isPublished);
 
 
+    void updateComment(Comment comment);
 }

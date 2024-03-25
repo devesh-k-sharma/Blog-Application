@@ -77,7 +77,7 @@ public class BlogRestController {
         String username = authentication.getName();
         User author = serviceImplementation.findUserByUsername(username);
         System.out.println(author);
-/*        author.setRole("Author");*/
+        author.setRole("Author");
         post.setAuthor(author);
 
         String[] tagNames = tag.split(",");
@@ -107,8 +107,12 @@ public class BlogRestController {
     @PutMapping("/updatePost/{postId}")
     public ResponseEntity<Post> updatePost(@PathVariable Long postId, @RequestBody Post updatedPost, @RequestParam(value = "tags") String tag) {
         Post existingPost = serviceImplementation.getPostById(postId);
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        User loggedInUser = serviceImplementation.findUserByUsername(username);
+        User author = existingPost.getAuthor();
 
-        if (existingPost != null) {
+        if (existingPost != null && loggedInUser.equals(author)) {
             updatedPost.setId(postId);
             updatedPost.setPublished_at(existingPost.getPublished_at());
 
@@ -147,7 +151,11 @@ public class BlogRestController {
     @DeleteMapping("/deletePost/{postId}")
     public ResponseEntity<Void> deletePost(@PathVariable Long postId) {
         Post existingPost = serviceImplementation.getPostById(postId);
-        if (existingPost != null) {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String username = authentication.getName();
+        User loggedInUser = serviceImplementation.findUserByUsername(username);
+        User author = existingPost.getAuthor();
+        if (existingPost != null && loggedInUser.equals(author)) {
             serviceImplementation.delete(postId);
             return new ResponseEntity<>(HttpStatus.NO_CONTENT);
         } else {
@@ -182,8 +190,6 @@ public class BlogRestController {
         return new ResponseEntity<>(comments, HttpStatus.OK);
     }
 
-
-
     @PostMapping("/{postId}/addComment")
     public ResponseEntity<Post> addComment(@RequestBody Comment comment, @PathVariable Long postId) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
@@ -201,6 +207,29 @@ public class BlogRestController {
         serviceImplementation.save(post);
 
         return new ResponseEntity<>(post, HttpStatus.OK);
+    }
+
+    @PutMapping("/{postId}/updateComment/{commentId}")
+    public ResponseEntity<Post> updateComment(@RequestBody Comment newComment, @PathVariable Long postId, @PathVariable Long commentId, @AuthenticationPrincipal UserDetails loggedInUser) {
+        Post post = serviceImplementation.getPostById(postId);
+        Comment comment = serviceImplementation.getComment(postId, commentId);
+        System.out.println(comment);
+        System.out.println(newComment);
+        if(newComment.getComment() != null && !newComment.getComment().isEmpty() && loggedInUser.equals(post.getAuthor())) {
+            comment.setComment(newComment.getComment());
+        }
+        serviceImplementation.updateComment(comment);
+        return new ResponseEntity<>(post, HttpStatus.OK);
+    }
+
+    @DeleteMapping("/{postId}/deleteComment/{commentId}")
+    public ResponseEntity<Void> deleteComment(@PathVariable Long postId, @PathVariable Long commentId, @AuthenticationPrincipal UserDetails loggedInUser) {
+        Post post = serviceImplementation.getPostById(postId);
+        if(loggedInUser.equals(post.getAuthor())) {
+            serviceImplementation.deleteComment(commentId, postId);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
 }

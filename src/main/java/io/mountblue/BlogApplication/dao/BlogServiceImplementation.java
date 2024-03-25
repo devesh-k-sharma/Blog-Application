@@ -257,4 +257,9 @@ public class BlogServiceImplementation implements BlogService {
         return null;
     }
 
+    @Override
+    public void updateComment(Comment comment) {
+        commentRepository.save(comment);
+    }
+
 }

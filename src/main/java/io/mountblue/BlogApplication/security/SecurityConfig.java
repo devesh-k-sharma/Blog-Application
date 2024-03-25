@@ -41,11 +41,11 @@ public class SecurityConfig {
         http.authorizeHttpRequests(configurer ->
                         configurer
                                 .requestMatchers("/", "/features", "/post{postId}").permitAll()
-                                .requestMatchers("/newpost", "/drafts", "/update**", "/delete**", "/api/posts").authenticated()
-                                .requestMatchers(HttpMethod.POST,"/api/create").hasRole("AUTHOR")
+                                .requestMatchers("/newpost", "/drafts", "/update**", "/delete**").authenticated()
+                                .requestMatchers(HttpMethod.POST,"/api/createPost").authenticated()
                                 .requestMatchers("/api/user").authenticated()
-//                                .requestMatchers(HttpMethod.PUT,"/api/post/**").permitAll()
-                                //.requestMatchers("/update**").hasAuthority("ROLE_AUTHOR")
+                                .requestMatchers(HttpMethod.DELETE,"/api/deletePost/{postId}", "/{postId}/deleteComment/{commentId}").authenticated()
+                                .requestMatchers(HttpMethod.PUT, "/api/updatePost/{postId}", "/api/{postId}/updateComment/{commentId}").authenticated()
                                 .anyRequest().permitAll()
                 )
                 .csrf(csrf -> csrf.disable())
