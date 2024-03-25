@@ -42,6 +42,11 @@ public class BlogServiceImplementation implements BlogService {
     }
 
     @Override
+    public Post savePost(Post post) {
+        return postRepository.save(post);
+    }
+
+    @Override
     public List<Post> showAllPosts() {
         return postRepository.findAll();
     }
@@ -230,17 +235,21 @@ public class BlogServiceImplementation implements BlogService {
 
     @Override
     public void saveUser(User user) {
-
+        userRepository.save(user);
     }
 
     @Override
     public boolean usernameExist(String username) {
+        User user = userRepository.findByName(username);
+        if(user != null) {
+            return true;
+        }
         return false;
     }
 
     @Override
     public User findUserByUsername(String username) {
-        return null;
+        return userRepository.findByUsername(username);
     }
 
     @Override

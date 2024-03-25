@@ -2,6 +2,8 @@ package io.mountblue.BlogApplication.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -39,10 +41,14 @@ public class SecurityConfig {
         http.authorizeHttpRequests(configurer ->
                         configurer
                                 .requestMatchers("/", "/features", "/post{postId}").permitAll()
-                                .requestMatchers("/newpost", "/drafts", "/update**", "/delete**").authenticated()
+                                .requestMatchers("/newpost", "/drafts", "/update**", "/delete**", "/api/posts").authenticated()
+                                .requestMatchers(HttpMethod.POST,"/api/create").hasRole("AUTHOR")
+                                .requestMatchers("/api/user").authenticated()
+//                                .requestMatchers(HttpMethod.PUT,"/api/post/**").permitAll()
                                 //.requestMatchers("/update**").hasAuthority("ROLE_AUTHOR")
                                 .anyRequest().permitAll()
                 )
+                .csrf(csrf -> csrf.disable())
                 .formLogin(form ->
                         form
                                 .loginPage("/login")
@@ -56,6 +62,7 @@ public class SecurityConfig {
                 .exceptionHandling(configurer ->
                         configurer.accessDeniedPage("/access-denied")
                 );
+        http.httpBasic(Customizer.withDefaults());
 
         return http.build();
     }

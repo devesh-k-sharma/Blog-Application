@@ -1,5 +1,6 @@
 package io.mountblue.BlogApplication.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.List;
@@ -15,6 +16,7 @@ public class User {
     private String email;
     private String password;
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Post> posts;
     private String role;
 

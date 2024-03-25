@@ -113,7 +113,10 @@
       padding: 5px 10px;
       margin-left: 10px;
     }
-
+  .comments-div{
+      display:flex;
+      justify-content:space-between;
+    }
   </style>
 </head>
 <body>
@@ -144,14 +147,18 @@
       <p>
         <span class="comment-name" th:text="${comment.name}"></span>
         <span class="comment-time" th:text="${comment.updatedAt}"></span>
+        <div class="comments-div">
+        <p th:text="${comment.comment}"></p>
         <span class="comment-actions">
+
           <div th:if="${#authentication.name == post.author.username}">
             <a th:href="@{'/updatecomment'+${post.id}+'/'+${comment.id}}" class="comment-button">Update</a>
             <a th:href="@{'/deletecomment'+${post.id}+'/'+${comment.id}}" class="comment-button">Delete</a>
           </div>
         </span>
+        </div>
       </p>
-      <p th:text="${comment.comment}"></p>
+<!--      <p th:text="${comment.comment}"></p>-->
     </div>
   </div>
 

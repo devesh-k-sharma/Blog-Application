@@ -47,6 +47,7 @@ h1 {
     flex-wrap: wrap;
     justify-content: space-between;
     padding: 0 20px;
+    width:100%;
 }
 
 .post-container {
@@ -97,6 +98,7 @@ a.create {
 .dropdown {
     position: relative;
     margin-right: 10px; /* Add margin to separate from search bar */
+    display:flex;
 }
 
 .dropbtn {
@@ -126,6 +128,7 @@ a.create {
 
 .dropdown:hover .dropdown-content {
     display: block;
+    background-color: gray;
 }
 
 input[type="text"] {
@@ -134,6 +137,7 @@ input[type="text"] {
     border-radius: 5px;
 }
 
+.container-
 button[type="submit"] {
     padding: 10px;
     background-color: gray;
@@ -151,6 +155,9 @@ button[type="submit"]:hover {
     display: flex;
     list-style: none;
     padding-left: 0;
+    position:absolute;
+    bottom:0;
+    right:50%;
 }
 
 .pagination li {
@@ -177,7 +184,13 @@ button[type="submit"]:hover {
     pointer-events: none;
     opacity: 0.5;
 }
-
+.btn{
+    display:flex;
+        }
+.container-post{
+    display:flex;
+    justify-content:space-between;
+}
 
     </style>
 </head>
@@ -186,36 +199,37 @@ button[type="submit"]:hover {
 <div class="header">
     <h1>My Blog Application</h1>
     <div class="button-container">
+
         <div sec:authorize="isAuthenticated()">
             <form action="#" th:action="@{/logout}" method="post">
                 <input type="submit" class="button" value="Logout">
             </form>
         </div>
-        <!-- If not authenticated, display login button -->
         <div sec:authorize="!isAuthenticated()">
             <a th:href="@{/login}" class="button">Login</a>
         </div>
-
         <a th:href="@{/drafts}" class="button">Drafts</a>
         <a th:href="@{/newpost}" class="button">Create</a>
     </div>
 </div>
-
+<div class="container-post">
 <div class="features">
     <form action="/features" method="GET">
-        <div class="dropdown">
-            <div class="dropbtn">Sort The Blog By </div>
-            <div class="dropdown-content">
-                <button type="submit" name="sortType" value="newest">Newest Blogs</button>
-                <button type="submit" name="sortType" value="oldest">Oldest Blogs</button>
-                <button type="submit" name="sortType" value="longest">Longest Blogs</button>
-                <button type="submit" name="sortType" value="shortest">Shortest Blogs</button>
-            </div>
-        </div>
         <div class="search-bar">
             <input type="text" name="searchFor" th:value="${searchFor}" placeholder="Search for author, title, tags">
             <button type="submit">Search</button>
         </div>
+        <div class="dropdown">
+            <div class="dropbtn">Sort The Blog By </div>
+                <div class="dropdown-content">
+                    <button type="submit" name="sortType" value="newest">Newest Blogs</button>
+                    <button type="submit" name="sortType" value="oldest">Oldest Blogs</button>
+                    <button type="submit" name="sortType" value="longest">Longest Blogs</button>
+                    <button type="submit" name="sortType" value="shortest">Shortest Blogs</button>
+                </div>
+
+        </div>
+
         <div class="filter-checkboxes">
             Authors
             <div th:each="author : ${author}">
@@ -231,12 +245,12 @@ button[type="submit"]:hover {
             </div>
 
         </div>
-        Published Date:
+        Published Date Between:
         <div>
-            <label for="startDate">Start Date:</label>
+            <label for="startDate"></label>
             <input type="date" id="startDate" name="startDate" th:value="${startDate}">
 
-            <label for="endDate">End Date:</label>
+            <label for="endDate"></label>
             <input type="date" id="endDate" name="endDate" th:value="${endDate}">
 
 
@@ -260,6 +274,7 @@ button[type="submit"]:hover {
             <a th:href="@{'/post'+${post.id}}" class="read-more" style="text-decoration: none; color: inherit;">Read more...</a>
 
         </div>
+</div>
 </div>
 
     <div th:if="${posts.totalPages > 1}">

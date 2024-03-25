@@ -7,6 +7,7 @@ import io.mountblue.BlogApplication.entity.Post;
 import io.mountblue.BlogApplication.entity.Tag;
 import io.mountblue.BlogApplication.entity.User;
 import jakarta.servlet.http.HttpSession;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.PageRequest;
@@ -29,6 +30,7 @@ public class BlogController {
 
     private BlogService serviceImplementation;
 
+    @Autowired
     public BlogController(BlogService serviceImplementation){
         this.serviceImplementation = serviceImplementation;
     }
@@ -313,6 +315,8 @@ public class BlogController {
         return "redirect:/post" + postId;
     }
 
+
+
     @GetMapping("/updatecomment{postId}/{commentId}")
     public String updateComment(@PathVariable("postId") Long postId,
                                 @PathVariable("commentId") Long commentId, Model model) {
@@ -332,6 +336,8 @@ public class BlogController {
             return "error";
         }
     }
+
+
 
     @GetMapping("/deletecomment{postId}/{commentId}")
     public String deleteComment(@PathVariable("postId") Long postId,

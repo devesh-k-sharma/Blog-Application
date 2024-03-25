@@ -16,6 +16,8 @@ public interface BlogService {
 
     void save(Post post);
 
+    Post savePost(Post post);
+
     List<Post> showAllPosts();
 
     void publish(Long id, boolean isPublished);
@@ -59,4 +61,6 @@ public interface BlogService {
     User findUserByUsername(String username);
 
     List<Post> findPostByUsernameAndIsPublished(String username, boolean isPublished);
+
+
 }
