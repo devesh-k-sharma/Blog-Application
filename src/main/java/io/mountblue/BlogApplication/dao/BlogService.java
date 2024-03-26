@@ -60,7 +60,7 @@ public interface BlogService {
 
     User findUserByUsername(String username);
 
-    List<Post> findPostByUsernameAndIsPublished(String username, boolean isPublished);
+    List<Post> findPostByAuthorAndIsPublished(User user, boolean isPublished);
 
 
     void updateComment(Comment comment);

@@ -150,8 +150,9 @@ public class BlogController {
     public String showDraftPage(Model model) {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         if (authentication != null && authentication.getPrincipal() instanceof UserDetails) {
-            UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-            List<Post> posts = serviceImplementation.findPostByUsernameAndIsPublished(userDetails.getUsername(),false);
+            String userName = authentication.getName();
+            User user = serviceImplementation.findUserByUsername(userName);
+            List<Post> posts = serviceImplementation.findPostByAuthorAndIsPublished(user,false);
             model.addAttribute("posts", posts);
             return "all-drafts";
         }

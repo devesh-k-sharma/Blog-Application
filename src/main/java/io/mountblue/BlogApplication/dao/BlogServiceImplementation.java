@@ -253,8 +253,8 @@ public class BlogServiceImplementation implements BlogService {
     }
 
     @Override
-    public List<Post> findPostByUsernameAndIsPublished(String username, boolean isPublished) {
-        return null;
+    public List<Post> findPostByAuthorAndIsPublished(User user, boolean isPublished) {
+        return postRepository.findPostByAuthorAndIsPublished(user, isPublished);
     }
 
     @Override
